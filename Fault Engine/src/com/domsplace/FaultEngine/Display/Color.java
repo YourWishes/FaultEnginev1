@@ -26,6 +26,8 @@ import org.lwjgl.BufferUtils;
  */
 public class Color {
     public static Color BLACK = Color.fromHex("#000000");
+    public static Color BLUE = Color.fromHex("#0000FF");
+    public static Color GREEN = Color.fromHex("#00FF00");
     public static Color WHITE = Color.fromHex("#FFFFFF");
     public static Color PINK = Color.fromHex("#FF00FF");
     public static Color GRAY = Color.fromHex("#CCCCCC");

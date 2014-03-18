@@ -29,5 +29,6 @@ public interface Animatable {
     
     public void removeAnimation(Animation a);
     
+    public void clearAnimations();
     public void onAnimateFrame(Animation a);
 }

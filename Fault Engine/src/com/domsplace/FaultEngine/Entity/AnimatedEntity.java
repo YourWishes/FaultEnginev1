@@ -38,7 +38,8 @@ public class AnimatedEntity extends ModelledEntity implements Animatable {
     @Override public void addAnimation(Animation a) {a.addAnimatableObject(this);animations.add(a);}
 
     @Override public void removeAnimation(Animation a) {a.removeAnimatableObject(this);animations.remove(a);}
-
+    
+    @Override public void clearAnimations() {this.animations.clear();}
     @Override public void onAnimateFrame(Animation a) {}
     @Override public void tick() {
         for(Animation a : this.getAnimations()) {
@@ -50,5 +51,12 @@ public class AnimatedEntity extends ModelledEntity implements Animatable {
             this.removeAnimation(a);
         }
         super.remove();
+    }
+    
+    public boolean containsAnimation(Class<? extends Animation> type) {
+        for(Animation a : this.getAnimations()) {
+            if(a.getClass().getName().equals(type.getName())) return true;
+        }
+        return false;
     }
 }
