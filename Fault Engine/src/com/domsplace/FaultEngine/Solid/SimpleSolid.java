@@ -29,6 +29,7 @@ public class SimpleSolid implements Solidable {
     
     public SimpleSolid() {
         super();
+        this.boundingBoxes = new ArrayList<BoundingBox>();
     }
     
     @Override public List<BoundingBox> getBoundingBoxes() {return new ArrayList<BoundingBox>(this.boundingBoxes);}

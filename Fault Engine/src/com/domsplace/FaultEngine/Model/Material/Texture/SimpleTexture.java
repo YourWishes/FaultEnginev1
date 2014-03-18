@@ -16,6 +16,7 @@
 
 package com.domsplace.FaultEngine.Model.Material.Texture;
 
+import static com.domsplace.FaultEngine.Display.DisplayManager.disableTextures;
 import static com.domsplace.FaultEngine.Display.DisplayManager.enableTextures;
 import java.io.InputStream;
 import static org.lwjgl.opengl.GL11.*;
@@ -25,10 +26,9 @@ import static org.lwjgl.opengl.GL11.*;
  * @author Dominic Masters
  */
 public abstract class SimpleTexture implements Texture {
-    private static Texture BOUND_TEXTURE;
+    private static Texture BOUND_TEXTURE = null;
     public static void unbindTexture() {
-        if(BOUND_TEXTURE == null) return;
-        glDisable(GL_TEXTURE_2D);
+        disableTextures();
         BOUND_TEXTURE = null;
     }
     
@@ -47,7 +47,10 @@ public abstract class SimpleTexture implements Texture {
     
     @Override
     public void bindTexture() {
-        if(BOUND_TEXTURE != null && BOUND_TEXTURE.equals(this)) return;
+        if(BOUND_TEXTURE != null && BOUND_TEXTURE.equals(this)) {
+            enableTextures();
+            return;
+        }
         if(BOUND_TEXTURE == null) {
             enableTextures();
         }

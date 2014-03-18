@@ -197,4 +197,11 @@ public abstract class SimpleModel implements Model {
         
         return strings;
     }
+    
+    public void reInit() {
+        for(Model m : this.getChildren()) {
+            if(!(m instanceof SimpleModel)) continue;
+            ((SimpleModel)m).reInit();
+        }
+    }
 }

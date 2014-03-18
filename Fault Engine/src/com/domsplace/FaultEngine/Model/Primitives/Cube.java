@@ -16,7 +16,9 @@
 
 package com.domsplace.FaultEngine.Model.Primitives;
 
+import com.domsplace.FaultEngine.Model.DynamicModel;
 import com.domsplace.FaultEngine.Model.EmptyModel;
+import com.domsplace.FaultEngine.Model.Face;
 import com.domsplace.FaultEngine.Model.Material.Material;
 import com.domsplace.FaultEngine.Model.Model;
 

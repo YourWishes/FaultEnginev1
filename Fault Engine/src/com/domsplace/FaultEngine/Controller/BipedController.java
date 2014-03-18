@@ -22,7 +22,7 @@ import com.domsplace.FaultEngine.Entity.BipedEntity;
  *
  * @author Dominic Masters
  */
-public class BipedController extends Controller {
+public class BipedController extends ModelController {
     public BipedController(BipedEntity controlling) {
         super(controlling);
     }

@@ -49,6 +49,14 @@ public class StaticModel extends SimpleModel {
         }
     }
     
+    //This will not remove the old VBO data!
+    public void newVBO() {
+        this.vHandle = -1;
+        this.tHandle = -1;
+        this.ib = null;
+        this.putOnVBO();
+    }
+    
     @Override
     public Model clone() {
         return new StaticModel(this);
@@ -166,5 +174,10 @@ public class StaticModel extends SimpleModel {
     public void dispose() {
         try {ib.put(0, vHandle);} catch(Throwable t) {}
         try {glDeleteBuffers(ib);} catch(Throwable t) {}
+    }
+    
+    @Override
+    public void reInit() {
+        this.newVBO();
     }
 }

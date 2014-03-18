@@ -46,6 +46,10 @@ public class Quad extends StaticModel {
         topRight.setVert1(bottomLeft.getVert2());
         topRight.getVert2().set(-0.5f, 0.5f, 0.0f);
         
+        topRight.setTextureCoordinate0(bottomLeft.getTextureCoordinate0());
+        topRight.setTextureCoordinate1(bottomLeft.getTextureCoordinate2());
+        topRight.getTextureCoordinate2().set(0.0f, 1.0f);
+        
         this.setMaterial(this.getMaterial().clone());
     }
     

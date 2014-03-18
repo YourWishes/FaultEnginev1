@@ -16,18 +16,16 @@
 
 package com.domsplace.FaultEngine.Controller;
 
-import com.domsplace.FaultEngine.Location.Location;
-import java.util.List;
+import com.domsplace.FaultEngine.Entity.ControllableEntity;
 
 /**
  *
  * @author Dominic Masters
  */
-public interface Controllable {
-    public List<Controller> getControllers();
-    public Location getLocation();
+public class ModelController extends Controller {
+    public ModelController(ControllableEntity controlling) {
+        super(controlling);
+    }
     
-    public void addController(Controller c);
-    
-    public void removeController(Controller c);
+    public ControllableEntity getControllingEntity() {return (ControllableEntity) this.getControlling();}
 }

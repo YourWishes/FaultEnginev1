@@ -19,6 +19,7 @@ package com.domsplace.FaultEngine.Entity;
 import com.domsplace.FaultEngine.Controller.Controllable;
 import com.domsplace.FaultEngine.Controller.Controller;
 import com.domsplace.FaultEngine.Model.Model;
+import com.domsplace.FaultEngine.Solid.BoundingBox;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,11 @@ public class ControllableEntity extends AnimatedEntity implements Controllable {
     
     public ControllableEntity(Model m) {
         super(m);
+        
+        if(m instanceof BoundingBox) {
+            this.addBoundingBox((BoundingBox)m);
+        }
+        
         this.controllers = new ArrayList<Controller>();
     }
 
