@@ -20,6 +20,7 @@ import com.domsplace.FaultEngine.Display.DisplayManager;
 import com.domsplace.FaultEngine.Frames.GameFrame;
 import com.domsplace.FaultEngine.LWJGL.LWJGLLibrary;
 import com.domsplace.FaultEngine.Logging.GameLogger;
+import com.domsplace.FaultEngine.Scene.Scene;
 import com.domsplace.FaultEngine.Settings.GameSettings;
 import com.domsplace.FaultEngine.System.GameSystem;
 import com.domsplace.FaultEngine.Utilities.FileUtilities;
@@ -79,6 +80,7 @@ public abstract class Game {
     public DisplayManager getDisplayManager() {return this.displayManager;}
     public GameSettings getGameSettings() {return this.settings;}
     public GameThread getThread() {return this.thread;}
+    public Scene getScene() {return Scene.ACTIVE_SCENE;}
     public abstract File getDataFolder();
     
     public void setShouldAskToClose(boolean t) {this.askToClose = t;}

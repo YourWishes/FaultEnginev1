@@ -73,4 +73,6 @@ public class Animation {
             a.removeAnimation(this);
         }
     }
+    
+    public Animation stop() {this.dispose(); return this;}
 }

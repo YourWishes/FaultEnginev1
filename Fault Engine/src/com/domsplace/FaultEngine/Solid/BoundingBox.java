@@ -23,7 +23,23 @@ import com.domsplace.FaultEngine.Model.Primitives.Cube;
  * @author Dominic Masters
  */
 public class BoundingBox extends Cube {    
-    public boolean isIn(BoundingBox box) {
+    public boolean isIn(BoundingBox box) {  //May not be thread safe (If Bounding Box Location changes)
+        double myX = this.getLocation().getX();
+        double myY = this.getLocation().getY();
+        double myZ = this.getLocation().getZ();
+        
+        double nmX = box.getLocation().getX();
+        double nmY = box.getLocation().getY();
+        double nmZ = box.getLocation().getZ();
+        
+        double mxs = this.getScaleX();
+        double mys = this.getScaleY();
+        double mzs = this.getScaleZ();
+        
+        double nxs = box.getScaleX();
+        double nys = box.getScaleY();
+        double nzs = box.getScaleZ();
+        
         
         return false;
     }
