@@ -35,13 +35,13 @@ public class GameThread implements Runnable {
     
     @Override
     public void run() {
-        boolean run = true;
-        try {run = !Display.isCloseRequested();} catch(Exception e) {}
-        while(run) {
+        while(!Game.GAME_INSTANCE.isGameRunning()) {}
+        while(Game.GAME_INSTANCE.isGameRunning()) {
             long now = System.currentTimeMillis();
             if(now - lastTick > 16) {
                 lastTick = now;
-                Scene.ACTIVE_SCENE.tick();
+                try {Scene.ACTIVE_SCENE.tick();}
+                catch(Throwable t) {Game.GAME_INSTANCE.getLogger().log(t);}
             }
         }
     }

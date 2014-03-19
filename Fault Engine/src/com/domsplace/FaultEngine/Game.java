@@ -51,6 +51,8 @@ public abstract class Game {
     private final GameThread thread;
     private final DisplayManager displayManager;
     
+    private boolean mainThreadRunning = false;
+    
     public Game(final String name, final double version, final Class launcher) throws UnsupportedOperationException {
         if(GAME_INSTANCE != null) throw new UnsupportedOperationException("Game already set");
         GAME_INSTANCE = this;
@@ -82,6 +84,7 @@ public abstract class Game {
     public GameThread getThread() {return this.thread;}
     public Scene getScene() {return Scene.ACTIVE_SCENE;}
     public abstract File getDataFolder();
+    public boolean isGameRunning() {return this.mainThreadRunning;}
     
     public void setShouldAskToClose(boolean t) {this.askToClose = t;}
     public void setGameLogger(GameLogger logger) {this.logger = logger;}
@@ -114,6 +117,7 @@ public abstract class Game {
     }
     
     public void forceClose(CloseReason reason) {
+        mainThreadRunning = false;
         try {this.thread.getThread().interrupt();} catch(Throwable t) {}
         try {this.displayManager.destroy();} catch(Throwable t) {}
         for(InputStream is : new ArrayList<InputStream>(FileUtilities.OPEN_STREAMS)) {
@@ -130,7 +134,7 @@ public abstract class Game {
     }
     
     public void tick() {
-        //Tick
+        this.mainThreadRunning = true;
     }
 
     public void crash(Throwable t) {

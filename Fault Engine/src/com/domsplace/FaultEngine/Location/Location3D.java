@@ -111,6 +111,13 @@ public class Location3D extends Location2D {
         this.subZ(t.getZ());
         return this;
     }
+
+    public Location3D add(Location diff) {
+        this.addX(diff.getX());
+        this.addY(diff.getY());
+        this.addZ(diff.getZ());
+        return this;
+    }
     
     public Location3D clone() {return new Location3D(this);}
     
@@ -150,5 +157,26 @@ public class Location3D extends Location2D {
         fb.put(d);
         fb.flip();
         return fb;
+    }
+    
+    public Location3D getRelative(double x, double y, double z) {
+        Location3D c = this.clone();
+        return (Location3D)c.addZ(z).addY(y).addX(x);
+    }
+    
+    public Location3D getRelativeInFacingDirection(double xzDistance, double yDistance, double offset) {//May not be thread safe
+        Location3D l = this.clone();
+        l.addX(xzDistance *  Math.sin(Math.toRadians(this.getYaw() + offset)));
+        l.subY(yDistance * Math.tan(Math.toRadians(this.getPitch())));//Need to make a 2D only method
+        l.addZ(xzDistance * Math.cos(Math.toRadians(this.getYaw() + offset)));
+        return l;
+    }
+    
+    public Location3D getRelativeInFacingDirection(double distance, double offset) {//May not be thread safe
+        return this.getRelativeInFacingDirection(distance, distance, offset);
+    }
+    
+    public Location3D getRelativeInFacingDirection(double distance) {//May not be thread safe
+        return this.getRelativeInFacingDirection(distance, 0);
     }
 }

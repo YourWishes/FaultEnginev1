@@ -40,7 +40,7 @@ public class SimpleCamera implements Camera {
     @Override public double getFOV() {return this.fov;}
     @Override public int getWidth() {return Game.GAME_INSTANCE.getGameFrame().gameCanvas.getWidth();}
     @Override public int getHeight() {return Game.GAME_INSTANCE.getGameFrame().gameCanvas.getHeight();}
-    @Override public Location getLocation() {return location;}
+    @Override public Location getLocation() {return (Location) location.setYaw(getYaw()).setPitch(getPitch());}
     public Location getTarget() {return this.target;}
     
     public double getAspectRatio() {
@@ -55,8 +55,9 @@ public class SimpleCamera implements Camera {
         this.target = location.clone();
     }   
     
+    public double getYaw() {return getYaw(target);}
     public double getYaw(Location target) {
-        Location l = this.getLocation();
+        Location l = this.location;
         double dX = l.getX() - target.getX();
         double dY = l.getY() - target.getY();
         double dZ = l.getZ() - target.getZ();
@@ -65,13 +66,14 @@ public class SimpleCamera implements Camera {
         return deg;
     }
     
+    public double getPitch() {return getPitch(target);}
     public double getPitch(Location target) {
-        Location l = this.getLocation();
+        Location l = this.location;
         double dX = l.getX() - target.getX();
         double dY = l.getY() - target.getY();
         double dZ = l.getZ() - target.getZ();
         double pitch = Math.atan2(Math.sqrt(dZ * dZ + dX * dX), dY) + Math.PI;
-        double deg = Math.toDegrees(pitch);
+        double deg = Math.toDegrees(-pitch);
         return deg;
     }
     
@@ -94,12 +96,11 @@ public class SimpleCamera implements Camera {
         float div = 1f;
         float ld = 1f;
         gluLookAt(this.getLocation().getFloatX()/ld, this.getLocation().getFloatY()/ld, this.getLocation().getFloatZ()/ld,this.target.getFloatX()/div, this.target.getFloatY()/div, this.target.getFloatZ()/div,0,1,0);
-        //this.getLocation().applyTranslations(true, false);
     }
 
     @Override
     public void panForward(double amt) {
-        throw new UnsupportedOperationException("Not Done yet");
+        this.setLocation(this.getLocation().getRelativeInFacingDirection(-amt));
     }
 
     @Override
@@ -109,11 +110,35 @@ public class SimpleCamera implements Camera {
 
     @Override
     public void panLeft(double amt) {
-        throw new UnsupportedOperationException("Not Done yet");
+        this.setLocation(this.getLocation().getRelativeInFacingDirection(amt, 0, -90d));
     }
 
     @Override
     public void panRight(double amt) {
         panLeft(-amt);
+    }
+    
+    public void panTargetForward(double amt) {
+        Location diff = this.getLocation().clone().subtract(this.target);
+        this.panForward(amt);
+        this.target.set(this.getLocation().clone().subtract(diff));
+    }
+
+    public void panTargetBackwards(double amt) {
+        Location diff = this.getLocation().clone().subtract(this.target);
+        this.panBackwards(amt);
+        this.target.set(this.getLocation().clone().subtract(diff));
+    }
+
+    public void panTargetLeft(double amt) {
+        Location diff = this.getLocation().clone().subtract(this.target);
+        this.panLeft(amt);
+        this.target.set(this.getLocation().clone().subtract(diff));
+    }
+
+    public void panTargetRight(double amt) {
+        Location diff = this.getLocation().clone().subtract(this.target);
+        this.panRight(amt);
+        this.target.set(this.getLocation().clone().subtract(diff));
     }
 }

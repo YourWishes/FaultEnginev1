@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package samples.SolidSample;
+package samples.FacingSample;
 
 import com.domsplace.FaultEngine.Controller.Controller;
 import com.domsplace.FaultEngine.Controller.ModelController;
@@ -22,17 +22,18 @@ import com.domsplace.FaultEngine.Display.Color;
 import com.domsplace.FaultEngine.Entity.ControllableEntity;
 import com.domsplace.FaultEngine.Game;
 import com.domsplace.FaultEngine.Location.Location;
-import com.domsplace.FaultEngine.Solid.BoundingBox;
+import com.domsplace.FaultEngine.Model.Primitives.Cube;
 import org.lwjgl.input.Keyboard;
 import sample.SampleApplication;
+import samples.SolidSample.SolidSample;
 
 /**
  *
  * @author Dominic Masters
  */
-public class SolidSample extends SampleApplication {
+public class FacingSample extends SampleApplication {
     public static void main(String[] args) {
-        Game game = new SolidSample();
+        Game game = new FacingSample();
         if(!game.getCurrentSystem().isLWJGLCompatible()) {
             game.showWarning("System not compatible!", "Your system doesn't appear to be compatbile with the LWJGL!");
             exit();
@@ -49,54 +50,54 @@ public class SolidSample extends SampleApplication {
         System.exit(0);
     }
     
-    public SolidSample() {
-        super("Solid Sample", 1.00, SolidSample.class);
+    public FacingSample() {
+        super("Facing Sample", 1.00, FacingSample.class);
     }
     
-    public static ControllableEntity entity2;
     @Override
     public void drawScene() {
-        ControllableEntity entity = new ControllableEntity(new BoundingBox());
-        entity2 = new ControllableEntity(new BoundingBox());
+        ControllableEntity ce = new ControllableEntity(new Cube());
+        this.getScene().addEntity(ce);
         
-        this.getScene().addEntity(entity);
-        this.getScene().addEntity(entity2);
-        
-        entity.getModel().getMaterial().setColor(Color.fromHex("00FF00"));
-        entity2.getModel().getMaterial().setColor(Color.fromHex("0000ff"));
-        entity.getLocation().setX(-3);
-        entity.getModel().setScale(0.5);
-        
-        Controller domsController = new ModelController(entity) {
+        Controller domsController = new ModelController(ce) {
             @Override
             public void tick() {
                 if(Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
-                    this.getControlling().getLocation().addX(0.1);
+                    this.getControlling().getLocation().addYaw(-1);
                 }
                 if(Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
-                    this.getControlling().getLocation().subX(0.1);
+                    this.getControlling().getLocation().addYaw(1);
                 }
                 if(Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
-                    this.getControlling().getLocation().addZ(0.1);
+                    this.getControlling().getLocation().addPitch(1);
                 }
                 if(Keyboard.isKeyDown(Keyboard.KEY_UP)) {
-                    this.getControlling().getLocation().subZ(0.1);
+                    this.getControlling().getLocation().addPitch(-1);
                 }
-                
-                if(this.getControllingEntity().isHitting(SolidSample.entity2)) {
-                    this.getControllingEntity().getModel().getMaterial().setColor(Color.fromHex("FF0000"));
-                } else {
-                    this.getControllingEntity().getModel().getMaterial().setColor(Color.fromHex("00FF00"));
+                if(Keyboard.isKeyDown(Keyboard.KEY_W)) {
+                    this.getControlling().getLocation().set(this.getControlling().getLocation().getRelativeInFacingDirection(0.1));
+                }
+                if(Keyboard.isKeyDown(Keyboard.KEY_S)) {
+                    this.getControlling().getLocation().set(this.getControlling().getLocation().getRelativeInFacingDirection(-0.1));
+                }
+                if(Keyboard.isKeyDown(Keyboard.KEY_A)) {
+                    this.getControlling().getLocation().set(this.getControlling().getLocation().getRelativeInFacingDirection(0.1, 90));
+                }
+                if(Keyboard.isKeyDown(Keyboard.KEY_D)) {
+                    this.getControlling().getLocation().set(this.getControlling().getLocation().getRelativeInFacingDirection(-0.1, 90));
                 }
             }
         };
-        entity.addController(domsController);
+        ce.addController(domsController);
+        
+        ce.getModel().getMaterial().setColor(Color.GRAY);
+        ce.getModel().getMaterial().setOutlineColor(Color.WHITE);
         
         //Draw Axis and Grid
         this.getDisplayManager().drawAxis = true;
         this.getDisplayManager().drawGrid = true;
         
         //Move Camera
-        this.getScene().getCamera().setLocation(new Location(3, 3, 3));
+        this.getScene().getCamera().setLocation(new Location(9,9,9));
     }
 }

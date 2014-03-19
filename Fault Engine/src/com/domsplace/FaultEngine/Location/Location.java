@@ -52,4 +52,24 @@ public class Location extends Location3D {
     public Location subtract(Location3D l) {
         return (Location) super.subtract(l);
     }
+    
+    @Override
+    public Location getRelative(double x, double y, double z) {
+        return new Location(super.getRelative(x, y, z));
+    }
+    
+    @Override
+    public Location getRelativeInFacingDirection(double distance) {
+        return new Location(super.getRelativeInFacingDirection(distance));
+    }
+    
+    @Override
+    public Location getRelativeInFacingDirection(double distance, double offset) {
+        return new Location(super.getRelativeInFacingDirection(distance, offset));
+    }
+    
+    @Override
+    public Location getRelativeInFacingDirection(double xzDistance, double yDistance, double offset) {
+        return new Location(super.getRelativeInFacingDirection(xzDistance, yDistance, offset));
+    }
 }
