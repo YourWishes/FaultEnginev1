@@ -16,9 +16,7 @@
 
 package com.domsplace.FaultEngine.Model.Primitives;
 
-import com.domsplace.FaultEngine.Model.DynamicModel;
 import com.domsplace.FaultEngine.Model.EmptyModel;
-import com.domsplace.FaultEngine.Model.Face;
 import com.domsplace.FaultEngine.Model.Material.Material;
 import com.domsplace.FaultEngine.Model.Model;
 
@@ -79,10 +77,23 @@ public class Cube extends EmptyModel {
         bottom.setMaterial(this.getMaterial());
     }
     
-    private Cube(Model m) {
+    private Cube(Cube m) {
         super(m);
         
-        this.cloneMaterial();
+        for(Model mod : m.getChildren()) {
+            this.removeChild(mod);
+        }
+        
+        this.front = m.front.clone();
+        this.back = m.back.clone();
+        this.left = m.left.clone();
+        this.right = m.right.clone();
+        this.top = m.top.clone();
+        this.bottom = m.bottom.clone();
+        
+        for(Model mod : this.getChildren()) {
+            mod.setParent(this);
+        }
         
         this.addChild(front);
         this.addChild(back);
@@ -91,27 +102,7 @@ public class Cube extends EmptyModel {
         this.addChild(top);
         this.addChild(bottom);
         
-        this.front.getLocation().setZ(0.5);
-        this.back.getLocation().setZ(-0.5);
-        
-        this.left.getLocation().setX(0.5);
-        this.right.getLocation().setX(-0.5);
-        
-        this.top.getLocation().setY(0.5);
-        this.bottom.getLocation().setY(-0.5);
-        
-        this.back.getLocation().setYaw(180);
-        this.left.getLocation().setYaw(90);
-        this.right.getLocation().setYaw(270);
-        this.top.getLocation().setPitch(270);
-        this.bottom.getLocation().setPitch(90);
-        
-        front.setMaterial(this.getMaterial());
-        back.setMaterial(this.getMaterial());
-        left.setMaterial(this.getMaterial());
-        right.setMaterial(this.getMaterial());
-        top.setMaterial(this.getMaterial());
-        bottom.setMaterial(this.getMaterial());
+        this.cloneMaterial();
     }
     
     public Quad getFront() {return this.front;}
@@ -135,5 +126,18 @@ public class Cube extends EmptyModel {
     @Override
     public Cube clone() {
         return new Cube(this);
+    }
+    
+    @Override
+    public String toString() {
+        String l = this.getLocation().toString();
+        String x = "CUBE: Location: " + "" + "\n";
+        x += "CHILDREN: \n";
+        for(Model m : this.getChildren()) {
+            x += m.toString() + "\n";
+        }
+        x += "\n";
+        x += "PARENT: " + (this.getParent() != null ? this.getParent().getClass().getSimpleName() : "null") + "\n";
+        return x;
     }
 }

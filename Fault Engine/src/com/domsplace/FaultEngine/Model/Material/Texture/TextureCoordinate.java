@@ -27,6 +27,10 @@ public class TextureCoordinate extends Coordinate2D {
         super(0,0);
     }
     
+    public TextureCoordinate(TextureCoordinate cloned) {
+        super(cloned);
+    }
+    
     public TextureCoordinate(double x, double y) {
         super(x,y,0);
     }
@@ -35,4 +39,8 @@ public class TextureCoordinate extends Coordinate2D {
         super(x,y,rotation);
     }
     
+    @Override
+    public TextureCoordinate clone() {
+        return new TextureCoordinate(this);
+    }
 }

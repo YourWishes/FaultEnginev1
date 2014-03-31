@@ -30,6 +30,10 @@ public class Location2D {
         this(0,0);
     }
     
+    public Location2D(Location2D cloned) {
+        this(cloned.getX(), cloned.getY(), cloned.getRotation());
+    }
+    
     public Location2D(double x, double y) {
         this(x,y,0);
     }
@@ -71,4 +75,9 @@ public class Location2D {
     public Location2D set(double x, double y) {this.x = x; this.y = y; return this;}
     public Location2D set(float x, float y) {this.x = x; this.y = y; return this;}
     public Location2D set(int x, int y) {this.x = x; this.y = y; return this;}
+    
+    @Override
+    public Location2D clone() {
+        return new Location2D(this);
+    }
 }

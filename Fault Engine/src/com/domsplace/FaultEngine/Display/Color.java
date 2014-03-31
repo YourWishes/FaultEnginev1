@@ -32,6 +32,7 @@ public class Color {
     public static Color PINK = Color.fromHex("#FF00FF");
     public static Color GRAY = Color.fromHex("#CCCCCC");
     public static Color RED = Color.fromHex("#FF0000");
+    public static Color CORNFLOWER_BLUE = Color.fromHex("#6495ED");
     
     public static Color fromHex(String hex) {
         if(!hex.startsWith("#")) hex = "#" + hex;
@@ -86,6 +87,8 @@ public class Color {
     public Color setGreen(float f) {this.g = f; return this;}
     public Color setBlue(float f) {this.b = f; return this;}
     public Color setAlpha(float f) {this.alpha = f; return this;}
+    
+    public boolean hasAlpha() {return this.alpha < 1.0f;}
     
     public Color clone() {
         return new Color(this);

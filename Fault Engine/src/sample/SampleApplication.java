@@ -19,7 +19,6 @@ package sample;
 import com.domsplace.FaultEngine.CloseReason;
 import com.domsplace.FaultEngine.Game;
 import com.domsplace.FaultEngine.LWJGL.LWJGLLibrary;
-import com.domsplace.FaultEngine.Model.Primitives.Cube;
 import com.domsplace.FaultEngine.Scene.Scene;
 import com.domsplace.FaultEngine.Utilities.GUIUtilities;
 import java.io.File;
@@ -73,7 +72,7 @@ public class SampleApplication extends Game {
         this.drawScene();
         
         this.getThread().getThread().start();
-        while(!Display.isCloseRequested()) {
+        while(!this.isAskedToClose()) {
             try {
                 this.tick();
                 this.getDisplayManager().update();

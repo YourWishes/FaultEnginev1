@@ -30,6 +30,8 @@ import java.util.List;
 public class ControllableEntity extends AnimatedEntity implements Controllable {
     private List<Controller> controllers;
     
+    private double speed = 0.2;
+    
     public ControllableEntity(Model m) {
         super(m);
         
@@ -39,9 +41,17 @@ public class ControllableEntity extends AnimatedEntity implements Controllable {
         
         this.controllers = new ArrayList<Controller>();
     }
-
+    
+    public double getSpeed() {return this.speed;}
     @Override public List<Controller> getControllers() {return new ArrayList<Controller>(this.controllers);}
 
+    public void setSpeed(double speed) {this.speed = speed;}
+    
+    public void moveForward() {this.getLocation().set(this.getLocation().getRelativeInFacingDirection(this.getSpeed()));}
+    public void moveBackward() {this.getLocation().set(this.getLocation().getRelativeInFacingDirection(-this.getSpeed()*0.75));}
+    public void moveLeft() {this.getLocation().set(this.getLocation().getRelativeInFacingDirection(this.getSpeed()*0.75, 90));}
+    public void moveRight() {this.getLocation().set(this.getLocation().getRelativeInFacingDirection(this.getSpeed()*0.75, 270));}
+    
     @Override
     public void addController(Controller c) {
         this.controllers.add(c);

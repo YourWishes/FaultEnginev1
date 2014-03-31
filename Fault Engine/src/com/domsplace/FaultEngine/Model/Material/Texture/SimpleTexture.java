@@ -16,8 +16,7 @@
 
 package com.domsplace.FaultEngine.Model.Material.Texture;
 
-import static com.domsplace.FaultEngine.Display.DisplayManager.disableTextures;
-import static com.domsplace.FaultEngine.Display.DisplayManager.enableTextures;
+import static com.domsplace.FaultEngine.Display.DisplayManager.*;
 import java.io.InputStream;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -54,6 +53,7 @@ public abstract class SimpleTexture implements Texture {
         if(BOUND_TEXTURE == null) {
             enableTextures();
         }
+        
         glBindTexture(GL_TEXTURE_2D, this.getTextureID());
         BOUND_TEXTURE = this;
     }

@@ -33,7 +33,7 @@ import static org.lwjgl.opengl.GL15.*;
 public class StaticModel extends SimpleModel {
     private IntBuffer ib;
     private int vHandle = -1;
-    private int tHandle;
+    private int tHandle = -1;
     
     public StaticModel() {
         super();
@@ -43,9 +43,11 @@ public class StaticModel extends SimpleModel {
         super(model);
         if(model instanceof StaticModel) {
             StaticModel sm = (StaticModel) model;
-            this.ib = sm.ib;
-            this.vHandle = sm.vHandle;
-            this.tHandle = sm.tHandle;
+            if(sm.ib != null) {
+                this.ib = sm.ib;
+                this.vHandle = sm.vHandle;
+                this.tHandle = sm.tHandle;
+            }
         }
     }
     
@@ -135,6 +137,8 @@ public class StaticModel extends SimpleModel {
     
     @Override
     public void renderMesh() {
+        if(this.vHandle == -1) this.init();
+        
         glEnableClientState(GL_VERTEX_ARRAY);
         if(this.getMaterial().getTextured()) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
@@ -145,7 +149,7 @@ public class StaticModel extends SimpleModel {
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glVertexPointer(3, GL_FLOAT, 3 << 2, 0L);
         
-        if(this.getMaterial().getTextured()) {
+        if(this.getMaterial().getTextured() && this.tHandle != -1) {
             glBindBuffer(GL_ARRAY_BUFFER, tHandle);
             glUnmapBuffer(GL_ARRAY_BUFFER);
             glTexCoordPointer(2, GL_FLOAT, 0, 0L);

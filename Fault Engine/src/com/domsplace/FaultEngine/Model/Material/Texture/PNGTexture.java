@@ -31,12 +31,12 @@ import static org.lwjgl.opengl.GL30.*;
  * @author Dominic Masters
  */
 public class PNGTexture extends SimpleTexture {    
-    public static Texture loadFromResource(String resource) throws IOException {
-        return loadFromInputStream(FileUtilities.getResource(resource));
+    public static Texture loadFromResource(String resource, Format type) throws IOException {
+        return loadFromInputStream(FileUtilities.getResource(resource), type);
     }
     
-    public static Texture loadFromInputStream(InputStream is) {
-        PNGTexture texture = new PNGTexture(is);
+    public static Texture loadFromInputStream(InputStream is, Format type) {
+        PNGTexture texture = new PNGTexture(is, type);
         return texture;
     }
     
@@ -45,9 +45,15 @@ public class PNGTexture extends SimpleTexture {
     
     private int tWidth;
     private int tHeight;
+    private Format type;
+    
+    public PNGTexture(InputStream is, Format type) {
+        super(is);
+        this.type = type;
+    }
     
     public PNGTexture(InputStream is) {
-        super(is);
+        this(is, Format.RGBA);
     }
 
     @Override
@@ -62,7 +68,7 @@ public class PNGTexture extends SimpleTexture {
             tWidth = decoder.getWidth();
             tHeight = decoder.getHeight();
             buf = ByteBuffer.allocateDirect(4 * decoder.getWidth() * decoder.getHeight());
-            decoder.decode(buf, decoder.getWidth() * 4, Format.RGBA);
+            decoder.decode(buf, decoder.getWidth() * 4, this.type);
             buf.flip();
 
             this.getInputStream().close();
@@ -76,8 +82,7 @@ public class PNGTexture extends SimpleTexture {
         //Put Texture on GFX card
         this.bindTexture();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tWidth, tHeight, 0,
-        GL_RGBA, GL_UNSIGNED_BYTE, buf);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tWidth, tHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
         glGenerateMipmap(GL_TEXTURE_2D);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -90,5 +95,6 @@ public class PNGTexture extends SimpleTexture {
     @Override public int getTextureID() {return this.id;}
     @Override public int getWidth() {return this.tWidth;}
     @Override public int getHeight() {return this.tHeight;}
+    @Override public boolean isTransparent() {return this.type.isHasAlpha();}
 }
     

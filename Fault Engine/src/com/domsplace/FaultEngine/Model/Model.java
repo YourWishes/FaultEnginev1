@@ -16,6 +16,7 @@
 
 package com.domsplace.FaultEngine.Model;
 
+import com.domsplace.FaultEngine.Display.RenderPass;
 import com.domsplace.FaultEngine.Location.Location;
 import com.domsplace.FaultEngine.Model.Material.Material;
 import com.domsplace.FaultEngine.Shader.ShaderProgram;
@@ -44,6 +45,7 @@ public interface Model {
     public void addChild(Model m);
     
     public void removeChild(Model m);
+    public void removeFace(Face f);
     
     public void setParent(Model m);
     public void setMaterial(Material m);
@@ -55,7 +57,7 @@ public interface Model {
     
     public void init();
     public void dispose();
-    public void render();
+    public void render(RenderPass pass);
     public void renderMesh();
     
     public Model clone();

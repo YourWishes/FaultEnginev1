@@ -24,7 +24,7 @@ import org.lwjgl.util.vector.Vector3f;
  */
 public class Location extends Location3D {
     public Location(Location location) {
-        super(location);
+        this((Location3D)location);
     }
     
     public Location() {

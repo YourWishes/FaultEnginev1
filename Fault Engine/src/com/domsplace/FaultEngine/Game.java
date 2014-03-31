@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
+import org.lwjgl.opengl.Display;
 
 /**
  *
@@ -53,7 +54,7 @@ public abstract class Game {
     
     private boolean mainThreadRunning = false;
     
-    public Game(final String name, final double version, final Class launcher) throws UnsupportedOperationException {
+    public Game(final String name, final double version, final Class launcher) {
         if(GAME_INSTANCE != null) throw new UnsupportedOperationException("Game already set");
         GAME_INSTANCE = this;
         
@@ -85,6 +86,7 @@ public abstract class Game {
     public Scene getScene() {return Scene.ACTIVE_SCENE;}
     public abstract File getDataFolder();
     public boolean isGameRunning() {return this.mainThreadRunning;}
+    public boolean isAskedToClose() {return Display.isCloseRequested();}
     
     public void setShouldAskToClose(boolean t) {this.askToClose = t;}
     public void setGameLogger(GameLogger logger) {this.logger = logger;}

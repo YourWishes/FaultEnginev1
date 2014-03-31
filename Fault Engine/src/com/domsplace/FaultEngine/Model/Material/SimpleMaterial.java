@@ -30,7 +30,7 @@ public class SimpleMaterial implements Material {
     
     private float outlineThickness = 3.0f;
     private Color outlineColor = new Color(0,0,0);
-    private boolean enableOutline = true;
+    private boolean enableOutline = false;
     
     private Color diffuse = Color.WHITE.clone();
     private Color ambient = Color.BLACK.clone();

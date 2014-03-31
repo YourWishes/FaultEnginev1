@@ -62,6 +62,18 @@ public class Triangle extends DynamicFace {
         
         this.reset();
     }
+
+    private Triangle(Triangle aThis) {
+        super(aThis);
+        this.vert0 = aThis.vert0.clone();
+        this.vert1 = aThis.vert1.clone();
+        this.vert2 = aThis.vert2.clone();
+        
+        this.t0 = aThis.t0.clone();
+        this.t1 = aThis.t1.clone();
+        this.t2 = aThis.t2.clone();
+        this.reset();
+    }
     
     public Vertice getVert0() {return this.vert0;}
     public Vertice getVert1() {return this.vert1;}
@@ -95,6 +107,11 @@ public class Triangle extends DynamicFace {
     public void setTextureCoordinate2(TextureCoordinate v) {
         this.t2 = v;
         this.reset();
+    }
+    
+    @Override
+    public Triangle clone() {
+        return new Triangle(this);
     }
     
     private void reset() {

@@ -16,14 +16,22 @@
 
 package com.domsplace.FaultEngine.Model.Primitives;
 
-import com.domsplace.FaultEngine.Model.Material.Material;
+import com.domsplace.FaultEngine.Model.Face;
 import com.domsplace.FaultEngine.Model.StaticModel;
+import com.domsplace.FaultEngine.Model.Vertice;
 
 /**
  *
  * @author Dominic Masters
  */
 public class Quad extends StaticModel {
+    private static Quad QUAD_MESH = null;
+    private static Quad getMesh() {
+        if(QUAD_MESH != null) return QUAD_MESH;
+        QUAD_MESH = new Quad(true);
+        QUAD_MESH.init();
+        return QUAD_MESH;
+    }
     public static Triangle[] createQuad() {
         Quad q = new Quad();
         return q.toQuadArray();
@@ -35,6 +43,10 @@ public class Quad extends StaticModel {
     private Triangle[] quadArray = new Triangle[0];
     
     public Quad() {
+        this(getMesh());
+    }
+    
+    private Quad(boolean t) {
         super();
         bottomLeft = new Triangle();
         this.addFace(bottomLeft);
@@ -53,11 +65,27 @@ public class Quad extends StaticModel {
         this.setMaterial(this.getMaterial().clone());
     }
     
-    public Quad(Quad m) {
+    private Quad(Quad m) {
         super(m);
-        this.bottomLeft = m.bottomLeft;
-        this.topRight = m.bottomLeft;
-        this.quadArray = m.quadArray;
+        for(Face f : this.getFaces()) {
+            this.removeFace(f);
+        }
+        
+        this.bottomLeft = m.bottomLeft.clone();
+        this.addFace(bottomLeft);
+        
+        this.topRight = m.topRight.clone();
+        this.addFace(topRight);
+        
+        topRight.setVert0(bottomLeft.getVert0());
+        topRight.setVert1(bottomLeft.getVert2());
+        topRight.getVert2().set(-0.5f, 0.5f, 0.0f);
+        
+        topRight.setTextureCoordinate0(bottomLeft.getTextureCoordinate0());
+        topRight.setTextureCoordinate1(bottomLeft.getTextureCoordinate2());
+        topRight.getTextureCoordinate2().set(0.0f, 1.0f);
+        
+        this.setMaterial(m.getMaterial());
     }
     
     public Triangle getBottomLeft() {return this.bottomLeft;}
@@ -71,12 +99,8 @@ public class Quad extends StaticModel {
         };
     }
     
+    @Override
     public Quad clone() {
         return new Quad(this);
-    }
-    
-    @Override
-    public void setMaterial(Material m) {
-        super.setMaterial(m);
     }
 }

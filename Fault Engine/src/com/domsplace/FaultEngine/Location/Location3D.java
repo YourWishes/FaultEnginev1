@@ -40,7 +40,7 @@ public class Location3D extends Location2D {
     }
     
     public Location3D(Location3D location) {
-        this(location.getX(), location.getY(), location.z, location.pitch, location.yaw, location.getRoll());
+        this(location.getX(), location.getY(), location.getZ(), location.getPitch(), location.getYaw(), location.getRoll());
     }
     
     public Location3D(double x, double y, double z) {
@@ -50,7 +50,7 @@ public class Location3D extends Location2D {
     public Location3D(double x, double y, double z, double pitch, double yaw, double roll) {
         this.setX(x);
         this.setY(y);
-        this.z = z;
+        this.setZ(z);
         
         this.pitch = pitch;
         this.yaw = yaw;
@@ -178,5 +178,21 @@ public class Location3D extends Location2D {
     
     public Location3D getRelativeInFacingDirection(double distance) {//May not be thread safe
         return this.getRelativeInFacingDirection(distance, 0);
+    }
+    
+    public double getDistanceFrom(Location3D location) {
+        return Math.sqrt((location.getX()-this.getX())*(location.getX()-this.getX()) + (location.getY()-this.getY())*(location.getY()-this.getY()) + (location.getZ()-this.getZ())*(location.getZ()-this.getZ()));
+    }
+    
+    @Override
+    public String toString() {
+        String x = "";
+        x += "X: " + this.getX();
+        x += ", Y: " + this.getY();
+        x += ", Z: " + this.getZ();
+        x += ", Yaw: " + this.getYaw();
+        x += ", Pitch: " + this.getPitch();
+        x += ", Roll: " + this.getRoll();
+        return x;
     }
 }

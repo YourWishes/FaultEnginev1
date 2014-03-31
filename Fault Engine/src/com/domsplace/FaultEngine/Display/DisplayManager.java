@@ -23,11 +23,13 @@ import com.domsplace.FaultEngine.Lighting.Light;
 import com.domsplace.FaultEngine.Model.Model;
 import java.awt.Canvas;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.lwjgl.opengl.Display;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL15.*;
 
 /**
  *
@@ -48,6 +50,14 @@ public class DisplayManager {
     public static boolean POLYGON_OFFSET_ENABLED = false;
     public static boolean TEXTURES_ENABLED = false;
     public static boolean LIGHTING_ENABLED = false;
+    public static boolean ALPHA_ENABLED = false;
+    public static boolean DEPTH_MASK_ENABLED = true;
+    public static boolean CULL_FRONT_FACE = false;
+    
+    public static void setCullFrontFace(boolean front) {
+        if(CULL_FRONT_FACE == front) return;
+        glFrontFace(front ? GL_CW : GL_CCW);
+    }
     
     public static void enableDepthTest() {
         if(DEPTH_TEST_ENABLED) return;
@@ -69,10 +79,10 @@ public class DisplayManager {
     
     public static void enableTextures() {
         if(TEXTURES_ENABLED) return;
-        glEnable(GL_TEXTURE);
+        glEnable(GL_TEXTURE_2D);
         glActiveTexture(GL_TEXTURE0);
         TEXTURES_ENABLED = true;
-    }
+    } 
     
     public static void enableLighting() {
         if(LIGHTING_ENABLED) return;
@@ -81,9 +91,36 @@ public class DisplayManager {
         LIGHTING_ENABLED = true;
     }
     
+    public static void enableAlpha() {
+        if(ALPHA_ENABLED) return;
+        glEnable(GL_BLEND);
+        glEnable(GL_ALPHA_TEST);
+        ALPHA_ENABLED = true;
+    }
+    
+    
+    public static void textureAlphaBlending() {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+    
+    public static void textureAlphaSkip() {
+        glAlphaFunc(GL_EQUAL, 1.0f);
+    }
+    
+    public static void textureNonAlphaSkip() {
+        glAlphaFunc(GL_LESS, 1.0f);
+    }
+    
+    
+    public static void enableDepthMask() {
+        if(DEPTH_MASK_ENABLED) return;
+        glDepthMask(DEPTH_MASK_ENABLED = true);
+    }
+    
+    
     public static void disableDepthTest() {
         if(!DEPTH_TEST_ENABLED) return;
-        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
         DEPTH_TEST_ENABLED = false;
     }
     
@@ -101,7 +138,7 @@ public class DisplayManager {
     
     public static void disableTextures() {
         if(!TEXTURES_ENABLED) return;
-        glDisable(GL_TEXTURE);
+        glDisable(GL_TEXTURE_2D);
         TEXTURES_ENABLED = false;
     }
     
@@ -110,6 +147,18 @@ public class DisplayManager {
         glDisable(GL_LIGHTING);
         glDisable(GL_LIGHT0);
         LIGHTING_ENABLED = false;
+    }
+    
+    public static void disableAlpha() {
+        if(!ALPHA_ENABLED) return;
+        glDisable(GL_BLEND);
+        glDisable(GL_ALPHA_TEST);
+        ALPHA_ENABLED = false;
+    }
+    
+    public static void disableDepthMask() {
+        if(!DEPTH_MASK_ENABLED) return;
+        glDepthMask(DEPTH_MASK_ENABLED = false);
     }
     
     //Instance
@@ -161,11 +210,15 @@ public class DisplayManager {
         glEnable(GL_COLOR_MATERIAL);
         
         enableCullFace();
+        setCullFrontFace(true);
         glCullFace(GL_FRONT);
-        glFrontFace(GL_CW);
         
         enablePolygonOffset();
         glPolygonOffset(-2f, -2f);
+        
+        enableAlpha();
+        enableTextures();
+        textureAlphaBlending();
         
         this.getCamera().getLocation().setZ(10);
     }
@@ -173,12 +226,13 @@ public class DisplayManager {
     public void update() {
         this.updateFPS();
         
-        glClearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, 1.0f);
+        glClearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.alpha);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         if(drawGrid && drawAxis) disableDepthTest();
         //Draw Grid
         if(drawGrid) {
+            disableTextures();
             glColor3f(this.gridColor.r, this.gridColor.g, this.gridColor.b);
             for(int x = -100; x < 100; x++) {
                 for(int y = -100; y <  100; y++) {
@@ -197,6 +251,7 @@ public class DisplayManager {
         }
         
         if(drawAxis) {
+            disableTextures();
             glPushMatrix();
             glColor3f(0,1,0);
             glLineWidth(1);
@@ -229,10 +284,51 @@ public class DisplayManager {
         CURRENT_RENDERED_MODELS = CURRENT_RENDERED_FACES = CURRENT_RENDERED_VERTICES = 0;
         
         this.getCamera().apply();
-        for(Model m : this.getRenderList()) {
+        List<Model> RENDER_LIST = this.getRenderList();
+        
+        //Z-ORDER
+        Collections.sort(RENDER_LIST, new Comparator<Model>() {
+            @Override
+            public int compare(Model model1, Model model2) {
+                double model1Distance = model1.getLocation().getDistanceFrom(getCamera().getLocation());
+                double model2Distance = model2.getLocation().getDistanceFrom(getCamera().getLocation());
+                boolean m1lt = model1Distance < model2Distance;
+                boolean m1et = model1Distance == model2Distance;
+                boolean m1gt = model1Distance > model2Distance;
+                
+                
+                if(m1lt) return 1;
+                if(m1et) return 0;
+                if(m1gt) return -1;
+                return -1;
+            }
+        });
+        
+        //PASS1: Render Outlines
+        for(Model m : RENDER_LIST) {
             try {
                 m.init();
-                m.render();
+                m.render(RenderPass.OUTLINE_RENDERING);
+            } catch(Throwable t) {
+                Game.GAME_INSTANCE.getLogger().log(t);
+            }
+        }
+        
+        //PASS2: Render NON ALPHA based Objects
+        for(Model m : RENDER_LIST) {
+            try {
+                m.init();
+                m.render(RenderPass.MESH_RENDERING);
+            } catch(Throwable t) {
+                Game.GAME_INSTANCE.getLogger().log(t);
+            }
+        }
+        
+        //PASS3: Render ALPHA based Objects
+        for(Model m : RENDER_LIST) {
+            try {
+                m.init();
+                m.render(RenderPass.ALPHA_RENDERING);
             } catch(Throwable t) {
                 Game.GAME_INSTANCE.getLogger().log(t);
             }

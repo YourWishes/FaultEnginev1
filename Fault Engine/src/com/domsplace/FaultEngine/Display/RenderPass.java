@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
-package com.domsplace.FaultEngine.Location;
+package com.domsplace.FaultEngine.Display;
 
 /**
  *
  * @author Dominic Masters
  */
-public class Coordinate2D extends Location2D {
-    public Coordinate2D() {
-        super(0,0);
+public class RenderPass {
+    public static final RenderPass MESH_RENDERING = new RenderPass("Mesh Rendering");
+    public static final RenderPass ALPHA_RENDERING = new RenderPass("Alpha Rendering");
+    public static final RenderPass OUTLINE_RENDERING = new RenderPass("Outline Rendering");
+    
+    //Instance
+    private String name;
+    
+    private RenderPass(String name) {
+        this.name = name;
     }
     
-    public Coordinate2D(Coordinate2D cloned) {
-        super(cloned);
-    }
-    
-    public Coordinate2D(double x, double y) {
-        super(x,y,0);
-    }
-    
-    public Coordinate2D(double x, double y, double rotation) {
-        super(x,y,rotation);
-    }
+    public String getName() {return this.name;}
 }

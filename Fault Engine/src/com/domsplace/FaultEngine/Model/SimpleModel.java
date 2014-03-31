@@ -19,6 +19,7 @@ package com.domsplace.FaultEngine.Model;
 import com.domsplace.FaultEngine.Display.Color;
 import com.domsplace.FaultEngine.Display.DisplayManager;
 import static com.domsplace.FaultEngine.Display.DisplayManager.*;
+import com.domsplace.FaultEngine.Display.RenderPass;
 import com.domsplace.FaultEngine.Game;
 import com.domsplace.FaultEngine.Location.Location;
 import com.domsplace.FaultEngine.Model.Material.Material;
@@ -56,10 +57,10 @@ public abstract class SimpleModel implements Model {
     public SimpleModel(Model model) {
         this();
         this.location = model.getLocation().clone();
-        this.pivot = model.getLocation()    ;
-        this.faces = model.getFaces();
+        this.pivot = model.getPivotLocation().clone();
+        this.faces = new ArrayList<Face>(model.getFaces());
         this.material = model.getMaterial();
-        this.children = model.getChildren();
+        this.children = new ArrayList<Model>(model.getChildren());
         this.shaderProgram = model.getShaderProgram();
         
         this.scaleX = model.getScaleX();
@@ -86,6 +87,7 @@ public abstract class SimpleModel implements Model {
     @Override public void addChild(Model m) {this.children.add(m); m.setParent(this);}
     
     @Override public void removeChild(Model m) {this.children.remove(m); m.setParent(null);}
+    @Override public void removeFace(Face f) {this.faces.remove(f);}
     
     @Override public void setMaterial(Material m) {this.material = m;}
     @Override public void setParent(Model m) {this.parent = m;}
@@ -98,8 +100,7 @@ public abstract class SimpleModel implements Model {
     public Material cloneMaterial() {this.setMaterial(this.getMaterial().clone()); return this.getMaterial();}
     
     @Override
-    public void render() {
-        //TODO: Finish translations
+    public void render(RenderPass pass) {
         glPushMatrix();
         
         this.getLocation().applyTranslations();
@@ -109,50 +110,107 @@ public abstract class SimpleModel implements Model {
         Texture t = null;
         ShaderProgram sp = null;
         
-        if(this.getMaterial().getOutlined()) {
-            t = this.getMaterial().getTexture();
-            this.getMaterial().setTexture(null);
-            SimpleTexture.unbindTexture();
-            
-            sp = this.getShaderProgram();
-            this.setShaderProgram(null);
-            ShaderProgram.unbindProgram();
-            
-            boolean lighting = LIGHTING_ENABLED;
-            
-            disableLighting();
-            glLineWidth(this.getMaterial().getOutlineThickness());
-            glPolygonMode(GL_BACK, GL_LINE);
-            Color outline = this.getMaterial().getOutlineColor();
-            glColor3f(outline.r, outline.g, outline.b);
-            this.renderMesh();
-            
-            if(lighting) enableLighting();
+        if(pass.equals(RenderPass.OUTLINE_RENDERING)) {
+            if(this.getMaterial().getOutlined()) {
+                //Unset Texture
+                t = this.getMaterial().getTexture();
+                this.getMaterial().setTexture(null);
+                SimpleTexture.unbindTexture();
+
+                //Unset ShaderProgram
+                sp = this.getShaderProgram();
+                this.setShaderProgram(null);
+                ShaderProgram.unbindProgram();
+                
+                //Store Lighting and Disable
+                boolean lighting = LIGHTING_ENABLED;
+                disableLighting();
+                
+                //Render Lines
+                glLineWidth(this.getMaterial().getOutlineThickness());
+                glPolygonMode(GL_BACK, GL_LINE);
+                Color outline = this.getMaterial().getOutlineColor();
+                glColor4f(outline.r, outline.g, outline.b, outline.alpha);
+                this.renderMesh();
+                
+                //Re-Enable Lighting (if needed)
+                if(lighting) enableLighting();
+                
+                //Reset Texture and Shader Program
+                this.getMaterial().setTexture(t);
+                this.setShaderProgram(shaderProgram);
+            }
         }
         
-        glPolygonMode(GL_BACK, GL_FILL);
-        Color c = this.getMaterial().getColor();
-        glColor3f(c.r, c.g, c.b);
-        
-        if(t != null) this.getMaterial().setTexture(t);
-        if(this.getMaterial().getTextured()) {
-            t = this.getMaterial().getTexture();
-            t.bindTexture();
-        } else {
-            SimpleTexture.unbindTexture();
+        if(pass.equals(RenderPass.MESH_RENDERING)) {
+            glPolygonMode(GL_BACK, GL_FILL);
+            Color c = this.getMaterial().getColor();
+            glColor3f(c.r, c.g, c.b);
+
+            //Bind Texture if needed
+            if(this.getMaterial().getTextured()) {
+                t = this.getMaterial().getTexture();
+                t.bindTexture();
+            } else {
+                SimpleTexture.unbindTexture();
+            }
+
+            //Bind Shader Program
+            if(this.getShaderProgram() != null) {
+                this.getShaderProgram().bind();
+            } else {
+                ShaderProgram.unbindProgram();
+            }
+
+            //Render Mesh
+            enableDepthTest();
+            enableDepthMask();
+            enableCullFace();
+            setCullFrontFace(false);
+
+            //IF this has some kind of alpha, only render the NON alpha stuff
+            if((this.getMaterial().getTextured() && this.getMaterial().getTexture().isTransparent()) || this.getMaterial().getColor().hasAlpha()) {
+                enableAlpha();
+                textureAlphaSkip();
+                this.renderMesh();
+            } else {
+                disableAlpha();
+                this.renderMesh();
+            }
         }
         
-        if(sp != null) this.setShaderProgram(sp);
-        if(this.getShaderProgram() != null) {
-            this.getShaderProgram().bind();
-        } else {
-            ShaderProgram.unbindProgram();
+        //Render Texture Alpha Layer
+        if(pass.equals(RenderPass.ALPHA_RENDERING)) {
+            if((this.getMaterial().getTextured() && this.getMaterial().getTexture().isTransparent()) || this.getMaterial().getColor().hasAlpha()) {
+                glPolygonMode(GL_BACK, GL_FILL);
+                Color c = this.getMaterial().getColor();
+                glColor4f(c.r, c.g, c.b, c.alpha);
+                
+                //Bind Texture if needed
+                if(this.getMaterial().getTextured()) {
+                    t = this.getMaterial().getTexture();
+                    t.bindTexture();
+                } else {
+                    SimpleTexture.unbindTexture();
+                }
+
+                //Bind Shader Program
+                if(this.getShaderProgram() != null) {
+                    this.getShaderProgram().bind();
+                } else {
+                    ShaderProgram.unbindProgram();
+                }
+                
+                enableAlpha();
+                textureNonAlphaSkip();
+                this.renderMesh();
+            }
         }
-        
-        this.renderMesh();
         
         for(Model m : this.children) {
-            m.render();
+            glPushMatrix();
+            m.render(pass);
+            glPopMatrix();
         }
         
         glPopMatrix();
@@ -163,40 +221,6 @@ public abstract class SimpleModel implements Model {
     @Override public abstract void renderMesh();
     
     @Override public abstract Model clone();
-    
-    public List<String> toClassableModel() {
-        List<String> strings = new ArrayList<String>();
-        
-        strings.add("DynamicFace f = null;");
-        strings.add("Vertice v = null;");
-        strings.add("Location l = null;");
-        
-        for(Face f : this.faces) {
-            strings.add("f = new DynamicFace();");
-            
-            
-            String location = "l = new Location(";
-            Location l = f.getLocation();
-            location += l.getX() + "," + l.getY() + "," + l.getZ() + ",";
-            location += l.getPitch() + "," + l.getYaw() + "," + l.getRoll();
-            location += ");";
-            strings.add(location);
-            strings.add("f.setLocation(l);");
-            
-            for(Vertice v : f.getVertices()) {
-                String vert = "v = new Vertice(";
-                vert += v.getX() + "," + v.getY() + "," + v.getZ() + ",";
-                vert += v.getPitch() + "," + v.getYaw() + "," + v.getRoll();
-                vert += ");";
-                strings.add(vert);
-                strings.add("f.addVertice(v);");
-            }
-            
-            strings.add("this.addFace(f);");
-        }
-        
-        return strings;
-    }
     
     public void reInit() {
         for(Model m : this.getChildren()) {

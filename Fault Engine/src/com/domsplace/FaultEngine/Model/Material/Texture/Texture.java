@@ -26,6 +26,7 @@ public interface Texture {
     public int getHeight();
     
     public boolean isLoaded();
+    public boolean isTransparent();
     
     public void load();
     

@@ -35,7 +35,8 @@ public class DynamicFace implements Face {
     
     public DynamicFace(Face face) {
         this();
-        this.verts = face.getVertices();
+        this.verts = new ArrayList<Vertice>(face.getVertices());
+        this.textCoords = new ArrayList<TextureCoordinate>(face.getTextureCoordinates());
         this.location = face.getLocation().clone();
     }
     
