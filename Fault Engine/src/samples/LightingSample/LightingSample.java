@@ -21,13 +21,9 @@ import com.domsplace.FaultEngine.Game;
 import com.domsplace.FaultEngine.Lighting.Light;
 import com.domsplace.FaultEngine.Lighting.SimpleLight;
 import com.domsplace.FaultEngine.Location.Location;
-import com.domsplace.FaultEngine.Model.DynamicFace;
-import com.domsplace.FaultEngine.Model.Loader.ModelLoader;
 import com.domsplace.FaultEngine.Model.Model;
 import com.domsplace.FaultEngine.Model.Primitives.*;
-import com.domsplace.FaultEngine.Model.StaticModel;
 import com.domsplace.FaultEngine.Scene.Scene;
-import com.domsplace.FaultEngine.Utilities.FileUtilities;
 import org.lwjgl.input.Keyboard;
 import sample.SampleApplication;
 
@@ -99,7 +95,7 @@ public class LightingSample extends SampleApplication {
         int grid = 2;
         for(int x = -grid; x <= grid; x++) {
             for(int z = -grid; z <= grid; z++) {
-                Model s = new Torus();
+                Model s = new Cube();
                 s.getLocation().setZ(z*2d).setX(x*2d);
                 myScene.addModel(s);
                 s.setMaterial(s.getMaterial().clone());
@@ -109,7 +105,7 @@ public class LightingSample extends SampleApplication {
         
         Plane plane = new Plane();
         plane.setScale(10);
-        plane.getMaterial().setColor(Color.BLUE);
+        plane.cloneMaterial().setColor(Color.BLUE);
         plane.getLocation().setY(-0.5);
         
         //Create a light

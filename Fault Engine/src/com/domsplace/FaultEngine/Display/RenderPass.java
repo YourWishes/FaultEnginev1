@@ -23,7 +23,6 @@ package com.domsplace.FaultEngine.Display;
 public class RenderPass {
     public static final RenderPass MESH_RENDERING = new RenderPass("Mesh Rendering");
     public static final RenderPass ALPHA_RENDERING = new RenderPass("Alpha Rendering");
-    public static final RenderPass OUTLINE_RENDERING = new RenderPass("Outline Rendering");
     
     //Instance
     private String name;

@@ -174,7 +174,7 @@ public class StaticModel extends SimpleModel {
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glVertexPointer(3, GL_FLOAT, 3 << 2, 0L);
         
-        if(this.getMaterial().getTextured() && this.tHandle != -1) {
+        if(this.getMaterial().getTextured() && this.tHandle != -1 && DisplayManager.TEXTURES_ENABLED) {
             glBindBuffer(GL_ARRAY_BUFFER, tHandle);
             glUnmapBuffer(GL_ARRAY_BUFFER);
             glTexCoordPointer(2, GL_FLOAT, 0, 0L);

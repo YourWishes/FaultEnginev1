@@ -17,6 +17,13 @@
 package com.domsplace.FaultEngine.Model.Material.Loader;
 
 import com.domsplace.FaultEngine.Model.Material.Material;
+import com.domsplace.FaultEngine.Model.Material.Texture.PNGTexture;
+import com.domsplace.FaultEngine.Model.Material.Texture.Texture;
+import de.matthiasmann.twl.utils.PNGDecoder;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -24,8 +31,69 @@ import com.domsplace.FaultEngine.Model.Material.Material;
  */
 public class WavefrontMaterialLoader extends MaterialLoader {
     @Override
-    public Material loadMaterial(String data, Class<? extends Material> materialType) throws Exception {
-        String[] lines = data.split("\n");
-        return null;
+    public List<Material> loadMaterials(String data, Class<? extends Material> materialType) throws Exception {
+        String[] lines = removeBlankElements(data.replaceAll("\r", "\n").split("\n"));
+        
+        List<Material> mats = new ArrayList<Material>();
+        Material material = null;
+        
+        for(int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            
+            if(line.startsWith("newmtl")) {
+                material = this.createMaterialFromClass(materialType);
+                material.setName(getLine(line, "newmtl"));
+                mats.add(material);
+            }
+            
+            if(line.startsWith("map_Kd")) {
+                line = getLine(line, "map_Kd");
+                //Try to get Texture
+                File f = new File(line);
+                Texture t = null;
+                if(f.exists()) {
+                    try {
+                        FileInputStream fis = new FileInputStream(f);
+                        t = PNGTexture.loadFromInputStream(fis, PNGDecoder.Format.RGBA);
+                        fis.close();
+                    } catch(Throwable th) {
+                        t = null;
+                    }
+                } else {
+                    try {
+                        t = PNGTexture.loadFromResource(line, PNGDecoder.Format.RGBA);
+                    } catch(Throwable th) {
+                        t = null;
+                    }
+                }
+                
+                if(t != null) {
+                    try {
+                        t.load();
+                        material.setTexture(t);
+                    } catch(Throwable th) {}
+                }
+            }
+        }
+        
+        return mats;
+    }
+    
+    private String getLine(String line, String code) {
+        line = line.replaceFirst(code, "");
+        while(line.startsWith(" ")) line = line.replaceFirst(" ", "");
+        return line;
+    }
+    
+    private String[] removeBlankElements(String[] parts) {
+        List<String> cleanParts = new ArrayList<String>();
+        for(String p : parts) {
+            if(p == null || p.replaceAll(" ", "").equals("")) continue;
+            if(p.replaceAll("\n", "").equals("")) continue;
+            if(p.replaceAll("\r", "").equals("")) continue;
+            cleanParts.add(p);
+        }
+        
+        return cleanParts.toArray(new String[cleanParts.size()]);
     }
 }

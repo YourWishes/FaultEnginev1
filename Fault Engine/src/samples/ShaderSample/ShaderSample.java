@@ -22,9 +22,9 @@ import com.domsplace.FaultEngine.Game;
 import com.domsplace.FaultEngine.Lighting.Light;
 import com.domsplace.FaultEngine.Lighting.SimpleLight;
 import com.domsplace.FaultEngine.Location.Location;
-import com.domsplace.FaultEngine.Model.Material.Texture.PNGTexture;
-import com.domsplace.FaultEngine.Model.Material.Texture.Texture;
-import com.domsplace.FaultEngine.Model.Model;
+import com.domsplace.FaultEngine.Model.Material.*;
+import com.domsplace.FaultEngine.Model.Material.Texture.*;
+import com.domsplace.FaultEngine.Model.*;
 import com.domsplace.FaultEngine.Model.Primitives.*;
 import com.domsplace.FaultEngine.Scene.Scene;
 import com.domsplace.FaultEngine.Shader.Shader;
@@ -95,11 +95,19 @@ public class ShaderSample extends SampleApplication {
                 if(Keyboard.isKeyDown(Keyboard.KEY_S)) {
                     l.getLocation().addY(-speed);
                 }
+                
+                for(Model m : this.getModels()) {
+                    if(m instanceof Plane) continue;
+                    m.getLocation().addYaw(1).addPitch(1);
+                }
             }
         };
         Scene.ACTIVE_SCENE = myScene;
         
         //Create some cubes
+        SimpleMaterial mat = new SimpleMaterial();
+        mat.setOutlined(true);
+        mat.setOutlineColor(Color.PINK);
         int grid = 2;
         for(int x = -grid; x <= grid; x++) {
             for(int z = -grid; z <= grid; z++) {
@@ -107,20 +115,32 @@ public class ShaderSample extends SampleApplication {
                 Model model = new Sphere();
                 model.getLocation().setZ(z*2d).setX(x*2d);
                 myScene.addModel(model);
-                model.getMaterial().setColor(Color.PINK);
+                model.setMaterial(mat);
             }
         }
         
-        Model cube = new Sphere();
+        Model cube = new Cube();
         try {
             Texture t = PNGTexture.loadFromResource("samples/TextureSample/brick.png", PNGDecoder.Format.RGBA);
             t.load();
+            
             cube.getMaterial().setTexture(t);
-            ((Sphere) cube).reInit();
+            cube.getMaterial().setOutlined(true);
+            cube.getMaterial().setOutlineThickness(10);
+            cube.getMaterial().setOutlineColor(Color.GREEN);
+            ((Cube) cube).reInit();
+            myScene.addModel(cube);
         } catch(Exception e) {
+            this.getLogger().log(e);
             cube.getMaterial().setColor(Color.RED);
         }
-        myScene.addModel(cube);
+        
+        
+        Model plane = new Plane();
+        plane.getMaterial().setColor(Color.BLUE);
+        plane.setScale(10);
+        plane.getLocation().setY(-1);
+        myScene.addModel(plane);
         
         //Create a light
         Light light = new SimpleLight();

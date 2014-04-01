@@ -17,6 +17,7 @@
 package com.domsplace.FaultEngine.Model.Material.Loader;
 
 import com.domsplace.FaultEngine.Model.Material.Material;
+import java.util.List;
 
 /**
  *
@@ -30,10 +31,10 @@ public abstract class MaterialLoader {
         
     }
     
-    public abstract Material loadMaterial(String data, Class<? extends Material> materialType) throws Exception;
+    public abstract List<Material> loadMaterials(String data, Class<? extends Material> materialType) throws Exception;
     
-    public MaterialLoader createMaterialFromClass(Class<? extends MaterialLoader> clazz) throws Exception {
+    public Material createMaterialFromClass(Class<? extends Material> clazz) throws Exception {
         Object o = clazz.newInstance();
-        return (MaterialLoader) o;
+        return (Material) o;
     }
 }

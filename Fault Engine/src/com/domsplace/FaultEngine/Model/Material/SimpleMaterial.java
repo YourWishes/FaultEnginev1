@@ -28,7 +28,7 @@ public class SimpleMaterial implements Material {
     
     private Color color = new Color(1,1,1,1);
     
-    private float outlineThickness = 3.0f;
+    private float outlineThickness = 4.0f;
     private Color outlineColor = new Color(0,0,0);
     private boolean enableOutline = false;
     

@@ -18,13 +18,15 @@ package com.domsplace.FaultEngine.Model.Loader;
 
 import com.domsplace.FaultEngine.Game;
 import com.domsplace.FaultEngine.Model.Face;
+import com.domsplace.FaultEngine.Model.Material.Loader.MaterialLoader;
 import com.domsplace.FaultEngine.Model.Material.Material;
 import com.domsplace.FaultEngine.Model.Material.Texture.TextureCoordinate;
 import com.domsplace.FaultEngine.Model.Model;
 import com.domsplace.FaultEngine.Model.Normal;
 import com.domsplace.FaultEngine.Model.Primitives.Quad;
-import com.domsplace.FaultEngine.Model.Primitives.Triangle;
 import com.domsplace.FaultEngine.Model.Vertice;
+import com.domsplace.FaultEngine.Utilities.FileUtilities;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +59,30 @@ public class WavefrontLoader extends ModelLoader {
                 m = this.createModelFromClass(modelType);
                 m.setMaterial(topModel.getMaterial());
                 topModel.addChild(m);
+            }
+            
+            if(line.startsWith("mtllib")) {
+                line = getLine(line, "mtllib");
+                //Try and Get File
+                File expectingFile = new File(line);
+                List<Material> materials = new ArrayList<Material>();
+                if(expectingFile.exists()) {
+                    materials.addAll(MaterialLoader.WAVEFRONT_LOADER.loadMaterials(FileUtilities.loadFileToString(expectingFile), materialType));
+                }
+                try {
+                    materials.addAll(MaterialLoader.WAVEFRONT_LOADER.loadMaterials(FileUtilities.getResourceAsString(line), materialType));
+                } catch(Throwable t) {}
+                loadedMaterials.addAll(materials);
+            }
+            
+            if(line.startsWith("usemtl")) {
+                line = getLine(line, "usemtl");
+                Material mt = null;
+                for(Material mat : loadedMaterials) {
+                    if(!mat.getName().equals(line)) continue;
+                    mt = mat;
+                }
+                if(mt != null) m.setMaterial(mt);
             }
             
             if(line.startsWith("vt")) {
@@ -120,7 +146,7 @@ public class WavefrontLoader extends ModelLoader {
                         }
                     } else {
                         //PURE VERTICE GETTING
-                        selectedVertice = loadedVertices.get(Integer.valueOf(indexLine));
+                        selectedVertice = loadedVertices.get(Integer.valueOf(indexLine)-1);
                     }
                     
                     //Now to add these things to the face

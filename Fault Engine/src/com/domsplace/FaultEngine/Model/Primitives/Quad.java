@@ -64,6 +64,10 @@ public class Quad extends StaticModel {
         topRight.setTextureCoordinate1(bottomLeft.getTextureCoordinate2());
         topRight.getTextureCoordinate2().set(0.0f, 1.0f);
         
+        topRight.setNormal0(bottomLeft.getNormal0());
+        topRight.setNormal1(bottomLeft.getNormal2());
+        topRight.getNormal2().set(-0.5773502588272095,0.5773502588272095,0.5773502588272095);
+        
         this.setMaterial(this.getMaterial().clone());
     }
     
@@ -87,7 +91,7 @@ public class Quad extends StaticModel {
         topRight.setTextureCoordinate1(bottomLeft.getTextureCoordinate2());
         topRight.getTextureCoordinate2().set(0.0f, 1.0f);
         
-        this.setMaterial(m.getMaterial());
+        this.setMaterial(m.getMaterial().clone());
     }
     
     public Triangle getBottomLeft() {return this.bottomLeft;}

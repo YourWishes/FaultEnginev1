@@ -16,6 +16,7 @@
 
 package com.domsplace.FaultEngine.Shader;
 
+import com.domsplace.FaultEngine.Utilities.FileUtilities;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,11 +29,25 @@ import static org.lwjgl.opengl.GL20.*;
  * @author Dominic Masters
  */
 public class ShaderProgram {
-    private static ShaderProgram BOUND_PROGRAM;
     public static void unbindProgram() {
-        if(BOUND_PROGRAM == null) return;
         glUseProgram(0);
-        BOUND_PROGRAM = null;
+    }
+    
+    //Predefined Shaders
+    private static ShaderProgram toonShader = null;
+    public static ShaderProgram getToonShader() {
+        if(toonShader != null) return toonShader;
+        Shader toonFragShader = new Shader();
+        Shader toonVertShader = new Shader();
+        toonShader = new ShaderProgram();
+        try {
+            toonFragShader.compile(FileUtilities.getResourceAsString("shaders/ToonShader/toon_shader.frag"), GL20.GL_FRAGMENT_SHADER);
+            toonVertShader.compile(FileUtilities.getResourceAsString("shaders/ToonShader/toon_shader.vert"), GL20.GL_VERTEX_SHADER);
+            toonShader.addShader(toonFragShader).addShader(toonVertShader);
+            toonShader.compile();
+        } catch(Exception e) {
+        }
+        return toonShader;
     }
     
     //Instance
@@ -58,7 +73,9 @@ public class ShaderProgram {
         glValidateProgram(this.program);
     }
     
-    public void bind() {glUseProgram(this.program);}
+    public void bind() {
+        glUseProgram(this.program);
+    }
     
     public int getVariableID(String variable) {
         return glGetUniformLocation(this.program, variable);

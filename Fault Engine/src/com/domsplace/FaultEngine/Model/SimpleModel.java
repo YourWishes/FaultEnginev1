@@ -25,7 +25,6 @@ import com.domsplace.FaultEngine.Location.Location;
 import com.domsplace.FaultEngine.Model.Material.Material;
 import com.domsplace.FaultEngine.Model.Material.SimpleMaterial;
 import com.domsplace.FaultEngine.Model.Material.Texture.SimpleTexture;
-import com.domsplace.FaultEngine.Model.Material.Texture.Texture;
 import com.domsplace.FaultEngine.Shader.ShaderProgram;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +94,7 @@ public abstract class SimpleModel implements Model {
     @Override public void setScaleY(double y) {this.scaleY = y;}
     @Override public void setScaleZ(double z) {this.scaleZ = z;}
     @Override public void setScale(double s) {this.scaleX = this.scaleY = this.scaleZ = s;}
-    @Override public void setShaderProgram(ShaderProgram shaderProgram) {this.shaderProgram = shaderProgram;}
+    @Override public void setShaderProgram(ShaderProgram shaderProgram) {this.shaderProgram = shaderProgram; for(Model m : this.children) {m.setShaderProgram(shaderProgram);}}
     
     public Material cloneMaterial() {this.setMaterial(this.getMaterial().clone()); return this.getMaterial();}
     
@@ -107,19 +106,17 @@ public abstract class SimpleModel implements Model {
         this.getPivotLocation().applyTranslations();
         glScaled(this.scaleX, this.scaleY, this.scaleZ);
         
-        Texture t = null;
-        ShaderProgram sp = null;
-        
-        if(pass.equals(RenderPass.OUTLINE_RENDERING)) {
+        if(pass.equals(RenderPass.MESH_RENDERING)) {
+            //Set Mesh Properties
+            enableDepthTest();
+            enableDepthMask();
+            enableCullFace();
+            setCullFrontFace(false);
+            
+            //Render Outlines as Needed
             if(this.getMaterial().getOutlined()) {
                 //Unset Texture
-                t = this.getMaterial().getTexture();
-                this.getMaterial().setTexture(null);
                 SimpleTexture.unbindTexture();
-
-                //Unset ShaderProgram
-                sp = this.getShaderProgram();
-                this.setShaderProgram(null);
                 ShaderProgram.unbindProgram();
                 
                 //Lighting Disable
@@ -128,49 +125,43 @@ public abstract class SimpleModel implements Model {
                 
                 //Render Lines
                 glLineWidth(this.getMaterial().getOutlineThickness());
+                
                 glPolygonMode(GL_BACK, GL_LINE);
+                glPolygonOffset(-this.getMaterial().getOutlineThickness(), -this.getMaterial().getOutlineThickness());
                 Color outline = this.getMaterial().getOutlineColor();
+                
+                if(outline.hasAlpha()) {
+                    enableAlpha();
+                } else {
+                    disableAlpha();
+                }
+                
                 glColor4f(outline.r, outline.g, outline.b, outline.alpha);
                 this.renderMesh();
                 
                 //Reset Texture and Shader Program
-                this.getMaterial().setTexture(t);
-                this.setShaderProgram(shaderProgram);
                 if(lightingEnabled) enableLighting();
             }
-        }
-        
-        if(pass.equals(RenderPass.MESH_RENDERING)) {
-            glPolygonMode(GL_BACK, GL_FILL);
+            
+            //Render Normally
             Color c = this.getMaterial().getColor();
             glColor3f(c.r, c.g, c.b);
+            glPolygonMode(GL_BACK, GL_FILL);
 
             //Bind Texture if needed
-            if(this.getMaterial().getTextured()) {
-                t = this.getMaterial().getTexture();
-                t.bindTexture();
-            } else {
-                SimpleTexture.unbindTexture();
-            }
+            this.bindTexture();
 
             //Bind Shader Program
             this.applyShader();
-
-            //Render Mesh
-            enableDepthTest();
-            enableDepthMask();
-            enableCullFace();
-            setCullFrontFace(false);
-
+            
             //IF this has some kind of alpha, only render the NON alpha stuff
             if((this.getMaterial().getTextured() && this.getMaterial().getTexture().isTransparent()) || this.getMaterial().getColor().hasAlpha()) {
                 enableAlpha();
                 textureAlphaSkip();
-                this.renderMesh();
             } else {
                 disableAlpha();
-                this.renderMesh();
             }
+            this.renderMesh();
         }
         
         //Render Texture Alpha Layer
@@ -181,12 +172,7 @@ public abstract class SimpleModel implements Model {
                 glColor4f(c.r, c.g, c.b, c.alpha);
                 
                 //Bind Texture if needed
-                if(this.getMaterial().getTextured()) {
-                    t = this.getMaterial().getTexture();
-                    t.bindTexture();
-                } else {
-                    SimpleTexture.unbindTexture();
-                }
+                this.bindTexture();
 
                 //Bind Shader Program
                 this.applyShader();
@@ -197,6 +183,7 @@ public abstract class SimpleModel implements Model {
             }
         }
         
+        //Render Children
         for(Model m : this.children) {
             glPushMatrix();
             m.render(pass);
@@ -229,13 +216,21 @@ public abstract class SimpleModel implements Model {
     public void applyShader() {
         if(this.getShaderProgram() != null) {
             //Set Variables
+            this.getShaderProgram().bind();
+            
             this.getShaderProgram().setVariable("color", this.getMaterial().getColor().asFloatBuffer(1.0f));
             this.getShaderProgram().setVariable("textured", this.getMaterial().getTextured());
             this.getShaderProgram().setVariable("texture", this.getMaterial().getTextured() ? this.getMaterial().getTexture().getTextureID()-1 : 0);
-
-            this.getShaderProgram().bind();
         } else {
             ShaderProgram.unbindProgram();
+        }
+    }
+    
+    public void bindTexture() {
+        if(this.getMaterial().getTextured()) {
+            this.getMaterial().getTexture().bindTexture();
+        } else {
+            SimpleTexture.unbindTexture();
         }
     }
 }

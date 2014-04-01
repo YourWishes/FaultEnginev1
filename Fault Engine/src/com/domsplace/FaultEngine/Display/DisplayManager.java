@@ -179,6 +179,12 @@ public class DisplayManager {
         LIGHTS_ENABLED.put(id,false);
     }
     
+    public static void disableAllLights() {
+        for(int i = GL_LIGHT0; i < GL_LIGHT0 + glGetInteger(GL_MAX_LIGHTS); i++) {
+            disableLight(i);
+        }
+    }
+    
     
     public static boolean isLightEnabled(int id) {
         if(!LIGHTS_ENABLED.containsKey(id)) return false;
@@ -348,17 +354,7 @@ public class DisplayManager {
         //PASS0: Render lights
         this.renderLights();
         
-        //PASS1: Render Outlines
-        for(Model m : RENDER_LIST) {
-            try {
-                m.init();
-                m.render(RenderPass.OUTLINE_RENDERING);
-            } catch(Throwable t) {
-                Game.GAME_INSTANCE.getLogger().log(t);
-            }
-        }
-        
-        //PASS2: Render NON ALPHA based Objects
+        //PASS1: Render NON ALPHA based Objects
         for(Model m : RENDER_LIST) {
             try {
                 m.init();
@@ -368,7 +364,7 @@ public class DisplayManager {
             }
         }
         
-        //PASS3: Render ALPHA based Objects
+        //PASS2: Render ALPHA based Objects
         for(Model m : RENDER_LIST) {
             try {
                 m.init();

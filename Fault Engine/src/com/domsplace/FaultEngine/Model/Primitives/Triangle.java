@@ -69,9 +69,9 @@ public class Triangle extends DynamicFace {
         Normal bottomRightNormal = new Normal();
         Normal topRightNormal = new Normal();
         
-        bottomLeftNormal.set(-0.5f, -0.5f, 0);
-        bottomRightNormal.set(0.5f, -0.5f, 0);
-        topRightNormal.set(0.5f, 0.5f, 0);
+        bottomLeftNormal.set(-0.5773502588272095,-0.5773502588272095,0.5773502588272095);
+        bottomRightNormal.set(0.5773502588272095,-0.5773502588272095,0.5773502588272095);
+        topRightNormal.set(0.5773502588272095,0.5773502588272095,0.5773502588272095);
         
         this.n0 = bottomLeftNormal;
         this.n1 = bottomRightNormal;
