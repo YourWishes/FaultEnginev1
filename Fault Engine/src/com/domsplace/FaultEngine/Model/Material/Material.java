@@ -31,9 +31,6 @@ public interface Material {
     public Texture getTexture();
     public boolean getTextured();
     public String getName();
-    public Color getDiffuse();
-    public Color getAmbient();
-    public Color getSpecular();
     
     public void setColor(Color c);
     public void setOutlineThickness(float t);
@@ -41,9 +38,6 @@ public interface Material {
     public void setOutlined(boolean i);
     public void setTexture(Texture t);
     public void setName(String name);
-    public void setDiffuse(Color c);
-    public void setAmbient(Color c);
-    public void setSpecular(Color c);
     
     public Material clone();
 }

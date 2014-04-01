@@ -16,10 +16,9 @@
 
 package com.domsplace.FaultEngine.Lighting;
 
+import com.domsplace.FaultEngine.Display.Color;
 import static com.domsplace.FaultEngine.Display.DisplayManager.enableLighting;
 import com.domsplace.FaultEngine.Location.Location;
-import com.domsplace.FaultEngine.Model.Material.Material;
-import com.domsplace.FaultEngine.Model.Model;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -30,21 +29,29 @@ public class SimpleLight implements Light {
     //Instance
     private Location location = new Location();
     
+    private Color diffuse = new Color(1.0f, 1.0f, 1.0f);
+    private Color ambient = new Color(0,0,0);
+    private Color specular = new Color(1.0f, 1.0f, 1.0f);
+    
     @Override public Location getLocation() {return this.location;}
+    @Override public Color getDiffuse() {return this.diffuse;}
+    @Override public Color getAmbient() {return this.ambient;}
+    @Override public Color getSpecular() {return this.specular;}
     
     @Override public void setLocation(Location l) {this.location = l.clone();}
+    @Override public void setDiffuse(Color c) {this.diffuse = c.clone();}
+    @Override public void setAmbient(Color c) {this.ambient = c.clone();}
+    @Override public void setSpecular(Color c) {this.specular = c.clone();}
     
     @Override
-    public void render(Model model) {
-        Material material = model.getMaterial();
-        enableLighting();
-        //Location l = this.getLocation().clone().subtract(model.getLocation());
+    public void render(int id) {
         Location l = this.getLocation();
-        glLight(GL_LIGHT0, GL_POSITION, l.asFloatBuffer());
-        glLight(GL_LIGHT0, GL_DIFFUSE, material.getDiffuse().asFloatBuffer(1f));
-        glLight(GL_LIGHT0, GL_AMBIENT, material.getAmbient().asFloatBuffer(1f));
-        glLight(GL_LIGHT0, GL_SPECULAR, material.getSpecular().asFloatBuffer(1f));
-        //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+        enableLighting();
+        glLight(id, GL_POSITION, l.asFloatBuffer());
+        glLight(id, GL_DIFFUSE, getDiffuse().asFloatBuffer(1f));
+        glLight(id, GL_AMBIENT, getAmbient().asFloatBuffer(1f));
+        glLight(id, GL_SPECULAR, getSpecular().asFloatBuffer(1f));
+        glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
         glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
     }
 }

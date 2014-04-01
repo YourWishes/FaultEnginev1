@@ -17,6 +17,7 @@
 package com.domsplace.FaultEngine.Model.Loader;
 
 import com.domsplace.FaultEngine.Model.Face;
+import com.domsplace.FaultEngine.Model.Material.Material;
 import com.domsplace.FaultEngine.Model.Model;
 
 /**
@@ -31,7 +32,7 @@ public abstract class ModelLoader {
         
     }
     
-    public abstract Model loadModel(String data, Class<? extends Model> modelType, Class<? extends Face> faceType) throws Exception;
+    public abstract Model loadModel(String data, Class<? extends Model> modelType, Class<? extends Face> faceType, Class<? extends Material> materialType) throws Exception;
     
     public Model createModelFromClass(Class<? extends Model> clazz) throws Exception {
         Object o = clazz.newInstance();

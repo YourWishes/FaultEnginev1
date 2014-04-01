@@ -34,6 +34,7 @@ public class StaticModel extends SimpleModel {
     private IntBuffer ib;
     private int vHandle = -1;
     private int tHandle = -1;
+    private int nHandle = -1;
     
     public StaticModel() {
         super();
@@ -47,6 +48,7 @@ public class StaticModel extends SimpleModel {
                 this.ib = sm.ib;
                 this.vHandle = sm.vHandle;
                 this.tHandle = sm.tHandle;
+                this.nHandle = sm.nHandle;
             }
         }
     }
@@ -64,18 +66,18 @@ public class StaticModel extends SimpleModel {
         return new StaticModel(this);
     }
     
-    public List<Vertice> getVertices() {
-        List<Vertice> verts = new ArrayList<Vertice>();
-        for(Face f : this.getFaces()) {
-            verts.addAll(f.getVertices());
-        }
-        return verts;
-    }
-    
     public List<TextureCoordinate> getTextureCoordinates() {
         List<TextureCoordinate> texts = new ArrayList<TextureCoordinate>();
         for(Face f : this.getFaces()) {
             texts.addAll(f.getTextureCoordinates());
+        }
+        return texts;
+    }
+    
+    public List<Normal> getNormals() {
+        List<Normal> texts = new ArrayList<Normal>();
+        for(Face f : this.getFaces()) {
+            texts.addAll(f.getNormals());
         }
         return texts;
     }
@@ -85,6 +87,7 @@ public class StaticModel extends SimpleModel {
         //Create a Float Buffer
         List<Vertice> verts = this.getVertices();
         List<TextureCoordinate> textCoords = this.getTextureCoordinates();
+        List<Normal> normals = this.getNormals();
         
         int buffers = 1; //Stores the amount of buffers we need (1 for Verts, 1 for colors, 1 for textures etc)
         
@@ -105,15 +108,28 @@ public class StaticModel extends SimpleModel {
             tBuffer.flip();
         }
         
+        FloatBuffer nBuffer = null;
+        if(normals.size() > 0) {
+            nBuffer = BufferUtils.createFloatBuffer(3*normals.size());
+            for(Normal norm : normals) {
+                nBuffer.put(norm.getFloatX()).put(norm.getFloatY()).put(norm.getFloatZ());
+            }
+            buffers += 1;
+            nBuffer.flip();
+        }
+        
+        
         ib = BufferUtils.createIntBuffer(buffers);
         glGenBuffers(ib);
         
         this.vHandle = ib.get(0);
         if(this.getMaterial().getTextured()) this.tHandle = ib.get(1);
+        if(normals.size() > 0) this.nHandle = ib.get(buffers-1);
         
         glEnableClientState(GL_VERTEX_ARRAY);
 
         if(this.getMaterial().getTextured()) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        if(nBuffer != null) glEnableClientState(GL_NORMAL_ARRAY);
         
         glBindBuffer(GL_ARRAY_BUFFER, vHandle);
         glBufferData(GL_ARRAY_BUFFER, vBuffer, GL_STATIC_DRAW);
@@ -127,6 +143,14 @@ public class StaticModel extends SimpleModel {
             glTexCoordPointer(2, GL_FLOAT, 0, 0L);
             this.getMaterial().getTexture().bindTexture();
         }
+        
+        if(nBuffer != null) {
+            glBindBuffer(GL_ARRAY_BUFFER, this.nHandle);
+            glBufferData(GL_ARRAY_BUFFER, nBuffer, GL_STATIC_DRAW);
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+            glNormalPointer(GL_FLOAT, 0, 0);
+        }
+        
         glDrawArrays(GL_TRIANGLES, 0, this.getFaces().size()*3 /* elements */);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -141,6 +165,7 @@ public class StaticModel extends SimpleModel {
         
         glEnableClientState(GL_VERTEX_ARRAY);
         if(this.getMaterial().getTextured()) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        if(this.nHandle != -1) glEnableClientState(GL_NORMAL_ARRAY);
 
         List<Face> faces = this.getFaces();
         int faceCount = faces.size();
@@ -154,6 +179,12 @@ public class StaticModel extends SimpleModel {
             glUnmapBuffer(GL_ARRAY_BUFFER);
             glTexCoordPointer(2, GL_FLOAT, 0, 0L);
             this.getMaterial().getTexture().bindTexture();
+        }
+        
+        if(nHandle != -1) {
+            glBindBuffer(GL_ARRAY_BUFFER, nHandle);
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+            glNormalPointer(GL_FLOAT, 0, 0);
         }
         
         glDrawArrays(GL_TRIANGLES, 0, faceCount*3 /* elements */);
@@ -183,5 +214,35 @@ public class StaticModel extends SimpleModel {
     @Override
     public void reInit() {
         this.newVBO();
+    }
+
+    public String getConstructorCode() {
+        String x = "";
+        
+        x += "Face f = null;\n";
+        x += "Vertice v = null;\n";
+        x += "Normal n = null;\n";
+        x += "TextureCoordinate tc = null;\n\n";
+        
+        for(Face f : this.getFaces()) {
+            x += "//Creating Face\n";
+            x += "f = new DynamicFace();";
+            x += "\n";
+            for(Vertice v : f.getVertices()) {
+                x += "v = new Vertice(" + v.getX() + "," + v.getY() + "," + v.getZ() + ");\n";
+                x += "f.addVertice(v);\n";
+            }
+            for(Normal n : f.getNormals()) {
+                x += "n = new Normal(" + n.getX() + "," + n.getY() + "," + n.getZ() + ");\n";
+                x += "f.addNormal(n);\n";
+            }
+            for(TextureCoordinate tc : f.getTextureCoordinates()) {
+                x += "tc = new TextureCoordinate(" + tc.getX() + "," + tc.getY() + ");\n";
+                x += "f.addTextureCoordinate(tc);\n";
+            }
+            x += "\nthis.addFace(f);\n\n";
+        }
+        
+        return x;
     }
 }

@@ -119,6 +119,13 @@ public class Location3D extends Location2D {
         return this;
     }
     
+    public Location3D divide(double amt) {
+        this.setX(this.getX() / amt);
+        this.setY(this.getY() / amt);
+        this.setZ(this.getZ() / amt);
+        return this;
+    }
+    
     public Location3D clone() {return new Location3D(this);}
     
     public void applyTranslations() {
@@ -184,6 +191,10 @@ public class Location3D extends Location2D {
         return Math.sqrt((location.getX()-this.getX())*(location.getX()-this.getX()) + (location.getY()-this.getY())*(location.getY()-this.getY()) + (location.getZ()-this.getZ())*(location.getZ()-this.getZ()));
     }
     
+    public Location3D normalise() {
+        return this.set(new Location3D((Vector3f) this.getVector().normalise()));
+    }
+    
     @Override
     public String toString() {
         String x = "";
@@ -194,5 +205,22 @@ public class Location3D extends Location2D {
         x += ", Pitch: " + this.getPitch();
         x += ", Roll: " + this.getRoll();
         return x;
+    }
+    
+    public Location3D crossProduct(Location3D with) {
+        double myX = this.getX();
+        double myY = this.getY();
+        double myZ = this.getZ();
+        
+        double tX = with.getX();
+        double tY = with.getY();
+        double tZ = with.getZ();
+        
+        double x = (myY * tZ)  - (myZ * tY);
+        double y = (myZ * tX)  - (myX * tZ);
+        double z = (myX * tY)  - (myY * tX);
+        
+        this.setZ(z).setY(y).setX(x);
+        return this;
     }
 }

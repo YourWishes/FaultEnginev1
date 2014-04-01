@@ -67,6 +67,7 @@ public class Cube extends EmptyModel {
         this.left.getLocation().setYaw(90);
         this.right.getLocation().setYaw(270);
         this.top.getLocation().setPitch(270);
+        this.top.getLocation().setRoll(90);
         this.bottom.getLocation().setPitch(90);
         
         front.setMaterial(this.getMaterial());

@@ -17,6 +17,8 @@
 package com.domsplace.FaultEngine.Model.Primitives;
 
 import com.domsplace.FaultEngine.Model.Face;
+import com.domsplace.FaultEngine.Model.Material.Texture.TextureCoordinate;
+import com.domsplace.FaultEngine.Model.Normal;
 import com.domsplace.FaultEngine.Model.StaticModel;
 import com.domsplace.FaultEngine.Model.Vertice;
 
@@ -40,7 +42,7 @@ public class Quad extends StaticModel {
     //Instance
     private Triangle bottomLeft;
     private Triangle topRight;
-    private Triangle[] quadArray = new Triangle[0];
+    private Triangle[] quadArray = null;
     
     public Quad() {
         this(getMesh());
@@ -90,6 +92,21 @@ public class Quad extends StaticModel {
     
     public Triangle getBottomLeft() {return this.bottomLeft;}
     public Triangle getTopRight() {return this.topRight;}
+    
+    public void setVert0(Vertice v) {bottomLeft.setVert0(v);topRight.setVert0(v);}
+    public void setVert1(Vertice v) {bottomLeft.setVert1(v);}
+    public void setVert2(Vertice v) {bottomLeft.setVert2(v);topRight.setVert1(v);}
+    public void setVert3(Vertice v) {topRight.setVert2(v);}
+    
+    public void setTextureCoordinate0(TextureCoordinate tc) {bottomLeft.setTextureCoordinate0(tc);topRight.setTextureCoordinate0(tc);}
+    public void setTextureCoordinate1(TextureCoordinate tc) {bottomLeft.setTextureCoordinate1(tc);}
+    public void setTextureCoordinate2(TextureCoordinate tc) {bottomLeft.setTextureCoordinate2(tc);topRight.setTextureCoordinate1(tc);}
+    public void setTextureCoordinate3(TextureCoordinate tc) {topRight.setTextureCoordinate2(tc);}
+    
+    public void setNormal0(Normal n) {bottomLeft.setNormal0(n);topRight.setNormal0(n);}
+    public void setNormal1(Normal n) {bottomLeft.setNormal1(n);}
+    public void setNormal2(Normal n) {bottomLeft.setNormal2(n);topRight.setNormal1(n);}
+    public void setNormal3(Normal n) {topRight.setNormal2(n);}
     
     public Triangle[] toQuadArray() {
         if(this.quadArray != null) return this.quadArray;

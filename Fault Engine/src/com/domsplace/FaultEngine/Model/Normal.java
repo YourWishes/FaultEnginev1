@@ -14,23 +14,38 @@
  * limitations under the License.
  */
 
-package com.domsplace.FaultEngine.Model.Biped;
+package com.domsplace.FaultEngine.Model;
+
+import com.domsplace.FaultEngine.Location.Location;
+import org.lwjgl.util.vector.Vector3f;
 
 /**
  *
  * @author Dominic Masters
  */
-public class ArmModel extends BodyPart {
-    public ArmModel(BipedModel biped) {
-        super(biped);
+public class Normal extends Location {
+    public Normal() {
+        super();
     }
     
-    public ArmModel(BodyPart bp) {
-        super(bp);
+    public Normal(Vector3f vector) {
+        super(vector.x, vector.y, vector.z);
+    }
+    
+    public Normal(Location location) {
+        super(location);
+    }
+    
+    public Normal(double x, double y, double z) {
+        super(x,y,z,0,0,0);
+    }
+    
+    public Normal(double x, double y, double z, double pitch, double yaw, double roll) {
+        super(x,y,z,pitch,yaw,roll);
     }
     
     @Override
-    public ArmModel clone() {
-        return new ArmModel(this);
+    public Normal clone() {
+        return new Normal(this);
     }
 }

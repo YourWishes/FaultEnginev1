@@ -33,6 +33,7 @@ public class Color {
     public static Color GRAY = Color.fromHex("#CCCCCC");
     public static Color RED = Color.fromHex("#FF0000");
     public static Color CORNFLOWER_BLUE = Color.fromHex("#6495ED");
+    public static Color YELLOW = Color.fromHex("#FFFF00");
     
     public static Color fromHex(String hex) {
         if(!hex.startsWith("#")) hex = "#" + hex;

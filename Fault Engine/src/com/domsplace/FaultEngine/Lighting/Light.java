@@ -16,8 +16,8 @@
 
 package com.domsplace.FaultEngine.Lighting;
 
+import com.domsplace.FaultEngine.Display.Color;
 import com.domsplace.FaultEngine.Location.Location;
-import com.domsplace.FaultEngine.Model.Model;
 
 /**
  *
@@ -25,8 +25,14 @@ import com.domsplace.FaultEngine.Model.Model;
  */
 public interface Light {
     public Location getLocation();
+    public Color getAmbient();
+    public Color getDiffuse();
+    public Color getSpecular();
     
     public void setLocation(Location l);
+    public void setAmbient(Color c);
+    public void setDiffuse(Color c);
+    public void setSpecular(Color c);
     
-    public void render(Model whatFor);
+    public void render(int LIGHT_ID);
 }

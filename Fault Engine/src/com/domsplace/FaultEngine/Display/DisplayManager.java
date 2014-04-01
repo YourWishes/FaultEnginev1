@@ -21,15 +21,18 @@ import com.domsplace.FaultEngine.Display.Camera.SimpleCamera;
 import com.domsplace.FaultEngine.Game;
 import com.domsplace.FaultEngine.Lighting.Light;
 import com.domsplace.FaultEngine.Model.Model;
+import com.domsplace.FaultEngine.Model.Primitives.Lightbulb;
+import com.domsplace.FaultEngine.Shader.ShaderProgram;
 import java.awt.Canvas;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.lwjgl.opengl.Display;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL15.*;
 
 /**
  *
@@ -53,6 +56,8 @@ public class DisplayManager {
     public static boolean ALPHA_ENABLED = false;
     public static boolean DEPTH_MASK_ENABLED = true;
     public static boolean CULL_FRONT_FACE = false;
+    
+    public static Map<Integer, Boolean> LIGHTS_ENABLED = new HashMap<Integer, Boolean>();
     
     public static void setCullFrontFace(boolean front) {
         if(CULL_FRONT_FACE == front) return;
@@ -87,8 +92,14 @@ public class DisplayManager {
     public static void enableLighting() {
         if(LIGHTING_ENABLED) return;
         glEnable(GL_LIGHTING);
-        glEnable(GL_LIGHT0);
         LIGHTING_ENABLED = true;
+    }
+    
+    public static void enableLight(int id) {
+        if(isLightEnabled(id)) return;
+        glEnable(id);
+        LIGHTS_ENABLED.remove(id);
+        LIGHTS_ENABLED.put(id,true);
     }
     
     public static void enableAlpha() {
@@ -97,6 +108,12 @@ public class DisplayManager {
         glEnable(GL_ALPHA_TEST);
         ALPHA_ENABLED = true;
     }
+    
+    public static void enableDepthMask() {
+        if(DEPTH_MASK_ENABLED) return;
+        glDepthMask(DEPTH_MASK_ENABLED = true);
+    }
+    
     
     
     public static void textureAlphaBlending() {
@@ -111,11 +128,6 @@ public class DisplayManager {
         glAlphaFunc(GL_LESS, 1.0f);
     }
     
-    
-    public static void enableDepthMask() {
-        if(DEPTH_MASK_ENABLED) return;
-        glDepthMask(DEPTH_MASK_ENABLED = true);
-    }
     
     
     public static void disableDepthTest() {
@@ -145,7 +157,6 @@ public class DisplayManager {
     public static void disableLighting() {
         if(!LIGHTING_ENABLED) return;
         glDisable(GL_LIGHTING);
-        glDisable(GL_LIGHT0);
         LIGHTING_ENABLED = false;
     }
     
@@ -161,6 +172,19 @@ public class DisplayManager {
         glDepthMask(DEPTH_MASK_ENABLED = false);
     }
     
+    public static void disableLight(int id) {
+        if(!isLightEnabled(id)) return;
+        glDisable(id);
+        LIGHTS_ENABLED.remove(id);
+        LIGHTS_ENABLED.put(id,false);
+    }
+    
+    
+    public static boolean isLightEnabled(int id) {
+        if(!LIGHTS_ENABLED.containsKey(id)) return false;
+        return LIGHTS_ENABLED.get(id);
+    }
+    
     //Instance
     private Canvas gameCanvas;
     private Camera camera;
@@ -174,6 +198,7 @@ public class DisplayManager {
     public boolean drawGrid = false;
     public Color gridColor = Color.fromHex("#DDDDDD");
     public boolean drawAxis = false;
+    public boolean drawLights = false;
     
     public Color clearColor = Color.fromHex("#000000");
     
@@ -209,6 +234,8 @@ public class DisplayManager {
         enableDepthTest();
         glEnable(GL_COLOR_MATERIAL);
         
+        glShadeModel(GL_SMOOTH);
+        
         enableCullFace();
         setCullFrontFace(true);
         glCullFace(GL_FRONT);
@@ -230,6 +257,11 @@ public class DisplayManager {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         if(drawGrid && drawAxis) disableDepthTest();
+        if(drawGrid || drawAxis) {
+            disableLighting();
+            ShaderProgram.unbindProgram();
+        }
+        
         //Draw Grid
         if(drawGrid) {
             disableTextures();
@@ -286,6 +318,15 @@ public class DisplayManager {
         this.getCamera().apply();
         List<Model> RENDER_LIST = this.getRenderList();
         
+        //Add Light Bulbs
+        if(this.drawLights) {
+            for(Light l : this.getLightsList()) {
+                Lightbulb lb = new Lightbulb();
+                lb.getLocation().set(l.getLocation());
+                RENDER_LIST.add(lb);
+            }
+        }
+        
         //Z-ORDER
         Collections.sort(RENDER_LIST, new Comparator<Model>() {
             @Override
@@ -303,6 +344,9 @@ public class DisplayManager {
                 return -1;
             }
         });
+        
+        //PASS0: Render lights
+        this.renderLights();
         
         //PASS1: Render Outlines
         for(Model m : RENDER_LIST) {
@@ -333,7 +377,6 @@ public class DisplayManager {
                 Game.GAME_INSTANCE.getLogger().log(t);
             }
         }
-        
         Display.update();
         
         this.lastFrame = System.currentTimeMillis();
@@ -344,9 +387,21 @@ public class DisplayManager {
         }
     }
     
-    public void renderLights(Model whatFor) {
-        for(Light l : this.getLightsList()) {
-            l.render(whatFor);
+    public void renderLights() {
+        int id = GL_LIGHT0;
+        List<Light> lights = this.getLightsList();
+        
+        for(int i = GL_LIGHT0; i < GL_LIGHT0 + glGetInteger(GL_MAX_LIGHTS); i++) {
+            if(i-GL_LIGHT0 < lights.size()) {
+                enableLight(i);
+            } else {
+                disableLight(i);
+            }
+        }
+        
+        for(Light l : lights) {
+            l.render(id);
+            id++;
         }
     }
     

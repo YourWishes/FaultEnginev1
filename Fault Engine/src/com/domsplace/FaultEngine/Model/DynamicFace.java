@@ -27,58 +27,36 @@ import java.util.List;
  */
 public class DynamicFace implements Face {
     private List<Vertice> verts = new ArrayList<Vertice>();
+    private List<Normal> norms = new ArrayList<Normal>();
     private List<TextureCoordinate> textCoords = new ArrayList<TextureCoordinate>();
     private Location location = new Location();
     
     public DynamicFace() {
+        super();
     }
     
     public DynamicFace(Face face) {
         this();
         this.verts = new ArrayList<Vertice>(face.getVertices());
+        this.norms = new ArrayList<Normal>(face.getNormals());
         this.textCoords = new ArrayList<TextureCoordinate>(face.getTextureCoordinates());
         this.location = face.getLocation().clone();
     }
     
-    @Override
-    public List<Vertice> getVertices() {
-        return new ArrayList<Vertice>(verts);
-    }
-
-    @Override
-    public List<TextureCoordinate> getTextureCoordinates() {
-        return new ArrayList<TextureCoordinate>(this.textCoords);
-    }
+    @Override public List<Vertice> getVertices() {return new ArrayList<Vertice>(verts);}
+    @Override public List<Normal> getNormals() {return new ArrayList<Normal>(norms);}
+    @Override public List<TextureCoordinate> getTextureCoordinates() {return new ArrayList<TextureCoordinate>(this.textCoords);}
+    @Override public Location getLocation() {return this.location;}
     
-    @Override
-    public Location getLocation() {
-        return this.location;
-    }
-    
-    @Override
-    public void setLocation(Location l) {
-        this.location = l.clone();
-    }
+    @Override public void setLocation(Location l) {this.location = l.clone();}
 
-    @Override
-    public void addVertice(Vertice vert) {
-        this.verts.add(vert);
-    }
+    @Override public void addVertice(Vertice vert) {this.verts.add(vert);}
+    @Override public void addNormal(Normal norm) {this.norms.add(norm);}
+    @Override public void addTextureCoordinate(TextureCoordinate textCoord) {this.textCoords.add(textCoord);}
 
-    @Override
-    public void addTextureCoordinate(TextureCoordinate textCoord) {
-        this.textCoords.add(textCoord);
-    }
-
-    @Override
-    public void removeVertice(Vertice vert) {
-        this.verts.remove(vert);
-    }
-
-    @Override
-    public void removeTextureCoordinate(TextureCoordinate textCoord) {
-        this.textCoords.remove(textCoord);
-    }
+    @Override public void removeVertice(Vertice vert) {this.verts.remove(vert);}
+    @Override public void removeNormal(Normal norm) {this.norms.remove(norm);}
+    @Override public void removeTextureCoordinate(TextureCoordinate textCoord) {this.textCoords.remove(textCoord);}
 
     @Override
     public Face clone() {

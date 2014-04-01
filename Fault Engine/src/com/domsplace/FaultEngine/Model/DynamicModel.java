@@ -51,6 +51,12 @@ public class DynamicModel extends SimpleModel {
                     TextureCoordinate tc = face.getTextureCoordinates().get(i);
                     glTexCoord2f(tc.getFloatX(), tc.getFloatY());
                 }catch(Throwable t) {}
+                
+                try {
+                    Normal norm = face.getNormals().get(i);
+                    glNormal3f(norm.getFloatX(), norm.getFloatY(), norm.getFloatZ());
+                }catch(Throwable t) {}
+                
                 glVertex3f(v.getFloatX(), v.getFloatY(), v.getFloatZ());
                 i++;
                 DisplayManager.CURRENT_RENDERED_VERTICES++;

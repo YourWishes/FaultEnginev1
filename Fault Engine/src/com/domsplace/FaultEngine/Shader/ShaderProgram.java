@@ -16,8 +16,11 @@
 
 package com.domsplace.FaultEngine.Shader;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL20;
 import static org.lwjgl.opengl.GL20.*;
 
 /**
@@ -56,4 +59,44 @@ public class ShaderProgram {
     }
     
     public void bind() {glUseProgram(this.program);}
+    
+    public int getVariableID(String variable) {
+        return glGetUniformLocation(this.program, variable);
+    }
+    
+    public void setVariable(String variable, float[] data) {
+        FloatBuffer fb = BufferUtils.createFloatBuffer(data.length);
+        fb.put(data);
+        fb.flip();
+        setVariable(variable, fb);
+    }
+    
+    public void setVariable(String variable, int data) {
+        setVariableByID(getVariableID(variable), data);
+    }
+    
+    public void setVariable(String variable, boolean data) {
+        setVariableByID(getVariableID(variable), data ? 1 : 0);
+    }
+    
+    public void setVariable(String variable, FloatBuffer stuff) {
+        setVariableByID(getVariableID(variable), stuff);
+    }
+    
+    public void setVariableByID(int id, FloatBuffer stuff) {
+        int size = stuff.capacity();
+        if(size == 1) {
+            GL20.glUniform1(id, stuff);
+        } else if(size == 2) {
+            GL20.glUniform2(id, stuff);
+        } else if(size == 3) {
+            GL20.glUniform3(id, stuff);
+        } else if(size == 4) {
+            GL20.glUniform4(id, stuff);
+        }
+    }
+    
+    public void setVariableByID(int id, int stuff) {
+        GL20.glUniform1i(id, stuff);
+    }
 }

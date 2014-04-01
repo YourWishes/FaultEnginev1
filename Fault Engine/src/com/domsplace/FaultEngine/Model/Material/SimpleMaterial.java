@@ -32,10 +32,6 @@ public class SimpleMaterial implements Material {
     private Color outlineColor = new Color(0,0,0);
     private boolean enableOutline = false;
     
-    private Color diffuse = Color.WHITE.clone();
-    private Color ambient = Color.BLACK.clone();
-    private Color specular = Color.WHITE.clone();
-    
     private Texture texture;
     
     public SimpleMaterial() {
@@ -48,9 +44,6 @@ public class SimpleMaterial implements Material {
     @Override public Texture getTexture() {return this.texture;}
     @Override public boolean getTextured() {return this.texture != null && this.texture.isLoaded();}
     @Override public String getName() {return this.name;}
-    @Override public Color getDiffuse() {return this.diffuse;}
-    @Override public Color getAmbient() {return this.ambient;}
-    @Override public Color getSpecular() {return this.specular;}
     
     @Override public void setColor(Color c) {this.color = c.clone();}
     @Override public void setOutlineThickness(float t) {this.outlineThickness = t;}
@@ -58,9 +51,6 @@ public class SimpleMaterial implements Material {
     @Override public void setOutlined(boolean i) {this.enableOutline = i;}
     @Override public void setTexture(Texture t) {this.texture = t;}
     @Override public void setName(String name) {this.name = name;}
-    @Override public void setDiffuse(Color c) {this.diffuse = c.clone();}
-    @Override public void setAmbient(Color c) {this.ambient = c.clone();}
-    @Override public void setSpecular(Color c) {this.specular = c.clone();}
 
     @Override
     public Material clone() {

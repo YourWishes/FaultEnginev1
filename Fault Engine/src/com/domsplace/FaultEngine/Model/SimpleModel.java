@@ -122,8 +122,8 @@ public abstract class SimpleModel implements Model {
                 this.setShaderProgram(null);
                 ShaderProgram.unbindProgram();
                 
-                //Store Lighting and Disable
-                boolean lighting = LIGHTING_ENABLED;
+                //Lighting Disable
+                boolean lightingEnabled = LIGHTING_ENABLED;
                 disableLighting();
                 
                 //Render Lines
@@ -133,12 +133,10 @@ public abstract class SimpleModel implements Model {
                 glColor4f(outline.r, outline.g, outline.b, outline.alpha);
                 this.renderMesh();
                 
-                //Re-Enable Lighting (if needed)
-                if(lighting) enableLighting();
-                
                 //Reset Texture and Shader Program
                 this.getMaterial().setTexture(t);
                 this.setShaderProgram(shaderProgram);
+                if(lightingEnabled) enableLighting();
             }
         }
         
@@ -156,11 +154,7 @@ public abstract class SimpleModel implements Model {
             }
 
             //Bind Shader Program
-            if(this.getShaderProgram() != null) {
-                this.getShaderProgram().bind();
-            } else {
-                ShaderProgram.unbindProgram();
-            }
+            this.applyShader();
 
             //Render Mesh
             enableDepthTest();
@@ -195,11 +189,7 @@ public abstract class SimpleModel implements Model {
                 }
 
                 //Bind Shader Program
-                if(this.getShaderProgram() != null) {
-                    this.getShaderProgram().bind();
-                } else {
-                    ShaderProgram.unbindProgram();
-                }
+                this.applyShader();
                 
                 enableAlpha();
                 textureNonAlphaSkip();
@@ -214,7 +204,6 @@ public abstract class SimpleModel implements Model {
         }
         
         glPopMatrix();
-        Game.GAME_INSTANCE.getDisplayManager().renderLights(this);
         DisplayManager.CURRENT_RENDERED_MODELS++;
     }
     
@@ -226,6 +215,27 @@ public abstract class SimpleModel implements Model {
         for(Model m : this.getChildren()) {
             if(!(m instanceof SimpleModel)) continue;
             ((SimpleModel)m).reInit();
+        }
+    }
+    
+    public List<Vertice> getVertices() {
+        List<Vertice> verts = new ArrayList<Vertice>();
+        for(Face f : this.getFaces()) {
+            verts.addAll(f.getVertices());
+        }
+        return verts;
+    }
+    
+    public void applyShader() {
+        if(this.getShaderProgram() != null) {
+            //Set Variables
+            this.getShaderProgram().setVariable("color", this.getMaterial().getColor().asFloatBuffer(1.0f));
+            this.getShaderProgram().setVariable("textured", this.getMaterial().getTextured());
+            this.getShaderProgram().setVariable("texture", this.getMaterial().getTextured() ? this.getMaterial().getTexture().getTextureID()-1 : 0);
+
+            this.getShaderProgram().bind();
+        } else {
+            ShaderProgram.unbindProgram();
         }
     }
 }

@@ -26,14 +26,17 @@ import java.util.List;
  */
 public interface Face {
     public List<Vertice> getVertices();
+    public List<Normal> getNormals();
     public List<TextureCoordinate> getTextureCoordinates();
     public Location getLocation();
     
     public void setLocation(Location l);
     
+    public void addNormal(Normal norm);
     public void addVertice(Vertice vert);
     public void addTextureCoordinate(TextureCoordinate textCoord);
     
+    public void removeNormal(Normal norm);
     public void removeVertice(Vertice vert);
     public void removeTextureCoordinate(TextureCoordinate textCoord);
     
