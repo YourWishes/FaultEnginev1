@@ -23,6 +23,8 @@ import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.*;
 
@@ -38,6 +40,17 @@ public class PNGTexture extends SimpleTexture {
     public static Texture loadFromInputStream(InputStream is, Format type) {
         PNGTexture texture = new PNGTexture(is, type);
         return texture;
+    }
+    
+    private static Texture testing = null;
+    public static Texture getTestingTexture() {
+        if(testing != null) return testing;
+        try {
+            testing = PNGTexture.loadFromResource("samples/TextureSample/brick.png", PNGDecoder.Format.RGBA);
+        } catch (IOException ex) {
+        }
+        testing.load();
+        return testing;
     }
     
     //Instance

@@ -20,10 +20,14 @@ import com.domsplace.FaultEngine.CloseReason;
 import com.domsplace.FaultEngine.Game;
 import java.awt.Canvas;
 import java.awt.Toolkit;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
 
 /**
  *
@@ -44,6 +48,7 @@ public class GameFrame extends JFrame {
                 super.windowClosing(e);
             }
         };
+
         this.addWindowListener(this.windowAdapter);
         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     }

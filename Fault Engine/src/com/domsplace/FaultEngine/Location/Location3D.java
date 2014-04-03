@@ -223,4 +223,11 @@ public class Location3D extends Location2D {
         this.setZ(z).setY(y).setX(x);
         return this;
     }
+    
+    public Location3D invert() {
+        this.setX(-this.getX());
+        this.setY(-this.getY());
+        this.setZ(-this.getZ());
+        return this;
+    }
 }

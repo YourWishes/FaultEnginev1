@@ -14,30 +14,19 @@
  * limitations under the License.
  */
 
-package com.domsplace.FaultEngine.Display.Camera;
+package com.domsplace.FaultEngine.Model.Primitives;
 
-import com.domsplace.FaultEngine.Location.Location;
+import com.domsplace.FaultEngine.Display.Color;
+import com.domsplace.FaultEngine.Model.Model2D;
 
 /**
  *
  * @author Dominic Masters
  */
-public interface Camera {
-    public int getWidth();
-    public int getHeight();
-    public double getFOV();
-    public Location getLocation();
-    
-    public void setFOV(double zoom);
-    public void setLocation(Location location);
-    
-    public void lookAt(Location location);
-    
-    public void panForward(double amt);
-    public void panBackwards(double amt);
-    public void panLeft(double amt);
-    public void panRight(double amt);
-    
-    public void apply();
-    public void reset();
+public class TriangleModel extends Model2D {
+    public TriangleModel() {
+        super();
+        this.addFace(new Triangle());
+        this.cloneMaterial().setColor(Color.RED);
+    }
 }

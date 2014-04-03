@@ -48,6 +48,13 @@ public abstract class SimpleModel implements Model {
     
     private Model parent = null;
     
+    public boolean cullFaced = true;
+    public boolean depthTested = true;
+    public boolean depthMasked = true;
+    public boolean isLighted = true;
+    public boolean render3D = true;
+    public boolean render2D = this instanceof Model2D;
+    
     //Instance
     public SimpleModel() {
         
@@ -61,6 +68,16 @@ public abstract class SimpleModel implements Model {
         this.material = model.getMaterial();
         this.children = new ArrayList<Model>(model.getChildren());
         this.shaderProgram = model.getShaderProgram();
+        
+        if(model instanceof SimpleModel) {
+            SimpleModel sm = (SimpleModel) model;
+            this.cullFaced = sm.cullFaced;
+            this.depthTested = sm.depthTested;
+            this.depthMasked = sm.depthMasked;
+            this.isLighted = sm.isLighted;
+            this.render3D = sm.render3D;
+            this.render2D = sm.render2D;
+        }
         
         this.scaleX = model.getScaleX();
         this.scaleY = model.getScaleY();
@@ -100,18 +117,19 @@ public abstract class SimpleModel implements Model {
     
     @Override
     public void render(RenderPass pass) {
+        List<Model> children = this.children;
+        if(pass.is3D() && !this.render3D && children.size() < 1) return;
+        if(!pass.is3D() && !this.render2D && children.size() < 1) return;
+        
         glPushMatrix();
         
         this.getLocation().applyTranslations();
         this.getPivotLocation().applyTranslations();
         glScaled(this.scaleX, this.scaleY, this.scaleZ);
         
-        if(pass.equals(RenderPass.MESH_RENDERING)) {
+        if(pass.equals(RenderPass.MESH_RENDERING) && render3D) {
             //Set Mesh Properties
-            enableDepthTest();
-            enableDepthMask();
-            enableCullFace();
-            setCullFrontFace(false);
+            this.setMeshProperties();
             
             //Render Outlines as Needed
             if(this.getMaterial().getOutlined()) {
@@ -124,29 +142,20 @@ public abstract class SimpleModel implements Model {
                 disableLighting();
                 
                 //Render Lines
-                glLineWidth(this.getMaterial().getOutlineThickness());
+                setOutlineThickness(this.getMaterial().getOutlineThickness());
                 
-                glPolygonMode(GL_BACK, GL_LINE);
-                glPolygonOffset(-this.getMaterial().getOutlineThickness(), -this.getMaterial().getOutlineThickness());
-                Color outline = this.getMaterial().getOutlineColor();
-                
-                if(outline.hasAlpha()) {
-                    enableAlpha();
-                } else {
-                    disableAlpha();
-                }
-                
-                glColor4f(outline.r, outline.g, outline.b, outline.alpha);
+                setPolygonMode(GL_BACK, GL_LINE);
+                setPolygonOffset(-this.getMaterial().getOutlineThickness(), -this.getMaterial().getOutlineThickness());
+                setColor(this.getMaterial().getOutlineColor());
                 this.renderMesh();
                 
                 //Reset Texture and Shader Program
-                if(lightingEnabled) enableLighting();
+                if(lightingEnabled && this.isLighted) enableLighting();
             }
             
             //Render Normally
-            Color c = this.getMaterial().getColor();
-            glColor3f(c.r, c.g, c.b);
-            glPolygonMode(GL_BACK, GL_FILL);
+            setColor(this.getMaterial().getColor());
+            setPolygonMode(GL_BACK, GL_FILL);
 
             //Bind Texture if needed
             this.bindTexture();
@@ -164,12 +173,32 @@ public abstract class SimpleModel implements Model {
             this.renderMesh();
         }
         
-        //Render Texture Alpha Layer
-        if(pass.equals(RenderPass.ALPHA_RENDERING)) {
+        if(pass.equals(RenderPass.MATRIX_2D_MESH_RENDERING) && render2D) {
+            //Set Mesh Properties
+            this.setMeshProperties();
+            
+            //Render Normally
+            setColor(this.getMaterial().getColor());
+            setPolygonMode(GL_BACK, GL_FILL);
+
+            //Bind Texture if needed
+            this.bindTexture();
+            
+            //IF this has some kind of alpha, only render the NON alpha stuff
             if((this.getMaterial().getTextured() && this.getMaterial().getTexture().isTransparent()) || this.getMaterial().getColor().hasAlpha()) {
-                glPolygonMode(GL_BACK, GL_FILL);
-                Color c = this.getMaterial().getColor();
-                glColor4f(c.r, c.g, c.b, c.alpha);
+                enableAlpha();
+                textureAlphaSkip();
+            } else {
+                disableAlpha();
+            }
+            this.renderMesh();
+        }
+        
+        //Render Texture Alpha Layer
+        if(pass.equals(RenderPass.ALPHA_RENDERING) && render3D) {
+            if((this.getMaterial().getTextured() && this.getMaterial().getTexture().isTransparent()) || this.getMaterial().getColor().hasAlpha()) {
+                setPolygonMode(GL_BACK, GL_FILL);
+                if(!this.getMaterial().getTextured()) setColor(this.getMaterial().getColor());
                 
                 //Bind Texture if needed
                 this.bindTexture();
@@ -184,10 +213,8 @@ public abstract class SimpleModel implements Model {
         }
         
         //Render Children
-        for(Model m : this.children) {
-            glPushMatrix();
+        for(Model m : children) {
             m.render(pass);
-            glPopMatrix();
         }
         
         glPopMatrix();
@@ -231,6 +258,32 @@ public abstract class SimpleModel implements Model {
             this.getMaterial().getTexture().bindTexture();
         } else {
             SimpleTexture.unbindTexture();
+        }
+    }
+    
+    public void setMeshProperties() {
+        if(depthTested) {
+            enableDepthTest();
+        } else {
+            disableDepthTest();
+        }
+        
+        if(depthMasked) {
+            enableDepthMask();
+        } else {
+            disableDepthMask();
+        }
+        
+        if(cullFaced) {
+            enableCullFace();
+        } else {
+            disableCullFace();
+        }
+        
+        if(isLighted && DisplayManager.LIGHTING_ENABLED) {
+            enableLighting();
+        } else {
+            disableLighting();
         }
     }
 }

@@ -97,6 +97,11 @@ public class Quad extends StaticModel {
     public Triangle getBottomLeft() {return this.bottomLeft;}
     public Triangle getTopRight() {return this.topRight;}
     
+    public Vertice getVert0() {return bottomLeft.getVert0();}
+    public Vertice getVert1() {return bottomLeft.getVert1();}
+    public Vertice getVert2() {return bottomLeft.getVert2();}
+    public Vertice getVert3() {return topRight.getVert2();}
+    
     public void setVert0(Vertice v) {bottomLeft.setVert0(v);topRight.setVert0(v);}
     public void setVert1(Vertice v) {bottomLeft.setVert1(v);}
     public void setVert2(Vertice v) {bottomLeft.setVert2(v);topRight.setVert1(v);}

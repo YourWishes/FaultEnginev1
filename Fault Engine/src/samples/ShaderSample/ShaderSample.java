@@ -140,7 +140,7 @@ public class ShaderSample extends SampleApplication {
         plane.getMaterial().setColor(Color.BLUE);
         plane.setScale(10);
         plane.getLocation().setY(-1);
-        myScene.addModel(plane);
+        //myScene.addModel(plane);
         
         //Create a light
         Light light = new SimpleLight();
@@ -169,6 +169,7 @@ public class ShaderSample extends SampleApplication {
         this.getDisplayManager().drawAxis = true;
         this.getDisplayManager().clearColor = Color.BLACK;
         this.getDisplayManager().drawLights = true;
+        this.getDisplayManager().showFPS = false;
         
         //Move Camera
         this.getScene().getCamera().setLocation(new Location(3, 3, 3));

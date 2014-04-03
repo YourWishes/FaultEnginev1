@@ -14,30 +14,29 @@
  * limitations under the License.
  */
 
-package com.domsplace.FaultEngine.Display.Camera;
-
-import com.domsplace.FaultEngine.Location.Location;
+package com.domsplace.FaultEngine.Model;
 
 /**
  *
  * @author Dominic Masters
  */
-public interface Camera {
-    public int getWidth();
-    public int getHeight();
-    public double getFOV();
-    public Location getLocation();
+public class Model2D extends DynamicModel {
+    public Model2D() {
+        super();
+        this.cullFaced = false;
+        this.depthMasked = false;
+        this.depthTested = false;
+    }
     
-    public void setFOV(double zoom);
-    public void setLocation(Location location);
-    
-    public void lookAt(Location location);
-    
-    public void panForward(double amt);
-    public void panBackwards(double amt);
-    public void panLeft(double amt);
-    public void panRight(double amt);
-    
-    public void apply();
-    public void reset();
+    public Model2D(Model model) {
+        super(model);
+        this.cullFaced = false;
+        this.depthMasked = false;
+        this.depthTested = false;
+    }
+
+    @Override
+    public Model clone() {
+        return new Model2D(this);
+    }
 }

@@ -128,17 +128,4 @@ public class Cube extends EmptyModel {
     public Cube clone() {
         return new Cube(this);
     }
-    
-    @Override
-    public String toString() {
-        String l = this.getLocation().toString();
-        String x = "CUBE: Location: " + "" + "\n";
-        x += "CHILDREN: \n";
-        for(Model m : this.getChildren()) {
-            x += m.toString() + "\n";
-        }
-        x += "\n";
-        x += "PARENT: " + (this.getParent() != null ? this.getParent().getClass().getSimpleName() : "null") + "\n";
-        return x;
-    }
 }

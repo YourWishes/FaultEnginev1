@@ -40,7 +40,9 @@ public class Lightbulb extends StaticModel {
     private Lightbulb(boolean t) {
         super();
         
-        Cube c = new Cube();
+        Cube c;
+        
+        c = new Cube();
         c.setScale(0.5);
         c.cloneMaterial().setColor(Color.YELLOW);
         c.getMaterial().setOutlined(true);

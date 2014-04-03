@@ -16,19 +16,35 @@
 
 package com.domsplace.FaultEngine.Model.Material.Texture;
 
+import com.domsplace.FaultEngine.Location.Location2D;
+
 /**
  *
  * @author Dominic Masters
  */
-public interface Texture {
-    public int getTextureID();
-    public int getWidth();
-    public int getHeight();
+public abstract class Texture {
+    public abstract int getTextureID();
+    public abstract int getWidth();
+    public abstract int getHeight();
     
-    public boolean isLoaded();
-    public boolean isTransparent();
+    public abstract boolean isLoaded();
+    public abstract boolean isTransparent();
     
-    public void load();
+    public abstract void load();
     
-    public void bindTexture();
+    public abstract void bindTexture();
+    
+    public Location2D coordinateToPixel(Location2D coordinate) {
+        Location2D l = coordinate.clone();
+        l.setX(l.getX() * this.getWidth());
+        l.setY(l.getY() * this.getHeight());
+        return l;
+    }
+    
+    public Location2D pixelToCoordinate(Location2D pixelCoordinate) {
+        Location2D l = pixelCoordinate.clone();
+        l.setX(l.getX() / this.getWidth());
+        l.setY(l.getY() / this.getHeight());
+        return l;
+    }
 }

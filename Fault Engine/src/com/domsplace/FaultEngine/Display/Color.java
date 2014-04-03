@@ -91,8 +91,17 @@ public class Color {
     
     public boolean hasAlpha() {return this.alpha < 1.0f;}
     
+    @Override
     public Color clone() {
         return new Color(this);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if(o == null) return false;
+        if(!(o instanceof Color)) return super.equals(o);
+        Color c = (Color) o;
+        return c.r == this.r && c.g == this.g && c.b == this.b && c.alpha == this.alpha;
     }
     
     public FloatBuffer asFloatBuffer(float multiplier) {

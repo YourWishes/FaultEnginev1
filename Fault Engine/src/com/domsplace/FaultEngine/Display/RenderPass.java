@@ -23,13 +23,26 @@ package com.domsplace.FaultEngine.Display;
 public class RenderPass {
     public static final RenderPass MESH_RENDERING = new RenderPass("Mesh Rendering");
     public static final RenderPass ALPHA_RENDERING = new RenderPass("Alpha Rendering");
+    public static final RenderPass MATRIX_MESH_RENDERING = new RenderPass("Matrix Mesh Rendering");
+    public static final RenderPass MATRIX_2D_MESH_RENDERING = new RenderPass("Matrix 2D Mesh Rendering", false);
+    public static final RenderPass MATRIX_ALPHA_RENDERING = new RenderPass("Matrix Alpha Rendering");
     
     //Instance
     private String name;
+    private boolean is3D;
     
     private RenderPass(String name) {
+        this(name, true);
+    }
+    
+    private RenderPass(String name, boolean is3D) {
         this.name = name;
+        this.is3D = is3D;
     }
     
     public String getName() {return this.name;}
+
+    public boolean is3D() {
+        return this.is3D;
+    }
 }

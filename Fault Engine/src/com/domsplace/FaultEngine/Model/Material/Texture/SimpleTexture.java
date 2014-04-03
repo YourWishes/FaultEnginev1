@@ -24,7 +24,7 @@ import static org.lwjgl.opengl.GL11.*;
  *
  * @author Dominic Masters
  */
-public abstract class SimpleTexture implements Texture {
+public abstract class SimpleTexture extends Texture {
     private static Texture BOUND_TEXTURE = null;
     public static void unbindTexture() {
         disableTextures();

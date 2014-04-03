@@ -16,6 +16,7 @@
 
 package com.domsplace.FaultEngine.Display.Camera;
 
+import static com.domsplace.FaultEngine.Display.DisplayManager.*;
 import com.domsplace.FaultEngine.Game;
 import com.domsplace.FaultEngine.Location.Location;
 import static org.lwjgl.opengl.GL11.*;
@@ -84,18 +85,39 @@ public class SimpleCamera implements Camera {
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         
-        float x = this.getLocation().getFloatX();
-        float y = this.getLocation().getFloatY();
-        float z = this.getLocation().getFloatZ();
+        Location l = this.location;
+        Location t = this.target;
+        float x = l.getFloatX();
+        float y = l.getFloatY();
+        float z = l.getFloatZ();
         
-        gluPerspective((float)this.fov, (float) this.getAspectRatio(), 1, 1000);
+        gluPerspective((float)this.fov, (float) this.getAspectRatio(), 1, Game.GAME_INSTANCE.getGameSettings().getSetting("drawDistance", 1000).getValueAsInt());
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         
         float div = 1f;
         float ld = 1f;
-        gluLookAt(this.getLocation().getFloatX()/ld, this.getLocation().getFloatY()/ld, this.getLocation().getFloatZ()/ld,this.target.getFloatX()/div, this.target.getFloatY()/div, this.target.getFloatZ()/div,0,1,0);
+        
+        gluLookAt(x/ld, y/ld, z/ld,t.getFloatX()/div, t.getFloatY()/div, t.getFloatZ()/div,0,1,0);
+    }
+
+    @Override
+    public void reset() {
+        glViewport(0,0,this.getWidth(), this.getHeight());
+        
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0.0, this.getWidth(), 0.0, this.getHeight(), -1.0, 10.0);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        
+        disableDepthTest();
+        enableDepthMask();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        
+        glLoadIdentity();
     }
 
     @Override

@@ -18,18 +18,24 @@ package com.domsplace.FaultEngine.Display;
 
 import com.domsplace.FaultEngine.Display.Camera.Camera;
 import com.domsplace.FaultEngine.Display.Camera.SimpleCamera;
+import com.domsplace.FaultEngine.Font.Font;
 import com.domsplace.FaultEngine.Game;
 import com.domsplace.FaultEngine.Lighting.Light;
+import com.domsplace.FaultEngine.Model.Material.Texture.SimpleTexture;
 import com.domsplace.FaultEngine.Model.Model;
 import com.domsplace.FaultEngine.Model.Primitives.Lightbulb;
 import com.domsplace.FaultEngine.Shader.ShaderProgram;
+import static com.domsplace.FaultEngine.Utilities.TimeUtilities.getNow;
 import java.awt.Canvas;
+import java.nio.FloatBuffer;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.Display;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
@@ -56,6 +62,16 @@ public class DisplayManager {
     public static boolean ALPHA_ENABLED = false;
     public static boolean DEPTH_MASK_ENABLED = true;
     public static boolean CULL_FRONT_FACE = false;
+    
+    public static int POLYGON_FACE_MODE = -1;
+    public static int POLYGON_MODE_MODE = -1;
+    
+    public static float POLYGON_OFFSET_X = 0;
+    public static float POLYGON_OFFSET_Y = 0;
+    
+    public static float LINE_WIDTH = 1;
+    
+    public static Color LAST_COLOR = null;
     
     public static Map<Integer, Boolean> LIGHTS_ENABLED = new HashMap<Integer, Boolean>();
     
@@ -129,6 +145,18 @@ public class DisplayManager {
     }
     
     
+    public static void setColor(Color c) {
+        if(LAST_COLOR != null && LAST_COLOR.equals(c)) return;
+        LAST_COLOR = c.clone();
+        if(LAST_COLOR.hasAlpha()) {
+            enableAlpha();
+            glColor4f(LAST_COLOR.r,LAST_COLOR.g,LAST_COLOR.b,LAST_COLOR.alpha);
+        } else {
+            disableAlpha();
+            glColor3f(LAST_COLOR.r,LAST_COLOR.g,LAST_COLOR.b);
+        }
+    }
+    
     
     public static void disableDepthTest() {
         if(!DEPTH_TEST_ENABLED) return;
@@ -191,12 +219,35 @@ public class DisplayManager {
         return LIGHTS_ENABLED.get(id);
     }
     
+    private static int maxLights = -1;
+    public static int getMaxLights() {
+        if(maxLights != -1) return maxLights;
+        return maxLights = glGetInteger(GL_MAX_LIGHTS);
+    }
+    
+    public static void setPolygonMode(int face, int mode) {
+        if(POLYGON_MODE_MODE == mode && POLYGON_FACE_MODE == face) return;
+        glPolygonMode(POLYGON_FACE_MODE = face, POLYGON_MODE_MODE = mode);
+    }
+    
+    public static void setPolygonOffset(float x, float y) {
+        if(POLYGON_OFFSET_X == x && POLYGON_OFFSET_Y == y) return;
+        glPolygonOffset(POLYGON_OFFSET_X = x, POLYGON_OFFSET_Y = y);
+    }
+    
+    public static void setOutlineThickness(float t) {
+        if(LINE_WIDTH == t) return;
+        glLineWidth(LINE_WIDTH = t);
+    }
+    
     //Instance
     private Canvas gameCanvas;
     private Camera camera;
     
     private long lastFrame = 0;
-    private double fps;
+    private double fps = 60;
+    private double nfps = 0;
+    private long lastFPS = getNow();
     
     private final List<Model> renderList = new ArrayList<Model>();
     private final List<Light> lightsList = new ArrayList<Light>();
@@ -205,6 +256,8 @@ public class DisplayManager {
     public Color gridColor = Color.fromHex("#DDDDDD");
     public boolean drawAxis = false;
     public boolean drawLights = false;
+    public boolean showFPS = false;
+    public boolean zOrder = false;
     
     public Color clearColor = Color.fromHex("#000000");
     
@@ -243,7 +296,7 @@ public class DisplayManager {
         glShadeModel(GL_SMOOTH);
         
         enableCullFace();
-        setCullFrontFace(true);
+        setCullFrontFace(false);
         glCullFace(GL_FRONT);
         
         enablePolygonOffset();
@@ -255,27 +308,35 @@ public class DisplayManager {
         
         this.getCamera().getLocation().setZ(10);
     }
-
+    
+    public static List<Model> RENDER_LIST;  //DO NOT MODIFY
     public void update() {
         this.updateFPS();
         
         glClearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.alpha);
+        enableDepthMask();  //Depth Mask needs to be enabled for the depth buffer clearing
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        RENDER_LIST = this.getRenderList();
+        
+        this.getCamera().apply();
         
         if(drawGrid && drawAxis) disableDepthTest();
         if(drawGrid || drawAxis) {
+            disableTextures();
             disableLighting();
+            SimpleTexture.unbindTexture();
             ShaderProgram.unbindProgram();
+            setOutlineThickness(1);
+            disableAlpha();
         }
         
         //Draw Grid
         if(drawGrid) {
-            disableTextures();
-            glColor3f(this.gridColor.r, this.gridColor.g, this.gridColor.b);
+            setColor(gridColor);
             for(int x = -100; x < 100; x++) {
                 for(int y = -100; y <  100; y++) {
                     glPushMatrix();
-                    glLineWidth(1);
                     glTranslatef((x * 1),0.0f,(y * 1));
                     glBegin(GL_LINE_LOOP);
                     glVertex3i(0,0,0);
@@ -289,40 +350,29 @@ public class DisplayManager {
         }
         
         if(drawAxis) {
-            disableTextures();
-            glPushMatrix();
-            glColor3f(0,1,0);
-            glLineWidth(1);
+            setColor(Color.GREEN);
             glBegin(GL_LINE_LOOP);
             glVertex3i(0,0,0);
             glVertex3i(0,200,0);
             glEnd();
-            
-            glColor3f(0,0,1);
-            glLineWidth(1);
+
+            setColor(Color.BLUE);
             glBegin(GL_LINE_LOOP);
             glVertex3i(0,0,0);
             glVertex3i(200,0,0);
             glEnd();
-            
-            glColor3f(1,0,0);
-            glLineWidth(1);
+
+            setColor(Color.RED);
             glBegin(GL_LINE_LOOP);
             glVertex3i(0,0,0);
             glVertex3i(0,0,200);
             glEnd();
-            glPopMatrix();
         }
-        
-        enableDepthTest();
         
         RENDERED_MODELS = CURRENT_RENDERED_MODELS;
         RENDERED_FACES = CURRENT_RENDERED_FACES;
         RENDERED_VERTICES = CURRENT_RENDERED_VERTICES;
         CURRENT_RENDERED_MODELS = CURRENT_RENDERED_FACES = CURRENT_RENDERED_VERTICES = 0;
-        
-        this.getCamera().apply();
-        List<Model> RENDER_LIST = this.getRenderList();
         
         //Add Light Bulbs
         if(this.drawLights) {
@@ -333,23 +383,33 @@ public class DisplayManager {
             }
         }
         
-        //Z-ORDER
-        Collections.sort(RENDER_LIST, new Comparator<Model>() {
-            @Override
-            public int compare(Model model1, Model model2) {
-                double model1Distance = model1.getLocation().getDistanceFrom(getCamera().getLocation());
-                double model2Distance = model2.getLocation().getDistanceFrom(getCamera().getLocation());
-                boolean m1lt = model1Distance < model2Distance;
-                boolean m1et = model1Distance == model2Distance;
-                boolean m1gt = model1Distance > model2Distance;
-                
-                
-                if(m1lt) return 1;
-                if(m1et) return 0;
-                if(m1gt) return -1;
-                return -1;
-            }
-        });
+        //Add FPS Counter
+        if(this.showFPS) {
+            Model m = Font.getSampleFont().generate2DGUI("FPS" + this.getFrameRateStr());
+            m.setScaleX(Font.getSampleFont().getCharacterWidth());//Scales to be 1:1 font size
+            m.setScaleY(Font.getSampleFont().getCharacterHeight());
+            m.getLocation().setY(getCamera().getHeight() - Font.getSampleFont().getCharacterHeight());//Align to top left
+            RENDER_LIST.add(m);
+        }
+        
+        if(zOrder) {
+            Collections.sort(RENDER_LIST, new Comparator<Model>() {
+                @Override
+                public int compare(Model model1, Model model2) {
+                    double model1Distance = model1.getLocation().getDistanceFrom(getCamera().getLocation());
+                    double model2Distance = model2.getLocation().getDistanceFrom(getCamera().getLocation());
+                    boolean m1lt = model1Distance < model2Distance;
+                    boolean m1et = model1Distance == model2Distance;
+                    boolean m1gt = model1Distance > model2Distance;
+
+
+                    if(m1lt) return 1;
+                    if(m1et) return 0;
+                    if(m1gt) return -1;
+                    return -1;
+                }
+            });
+        }
         
         //PASS0: Render lights
         this.renderLights();
@@ -373,6 +433,59 @@ public class DisplayManager {
                 Game.GAME_INSTANCE.getLogger().log(t);
             }
         }
+        
+        //PASS3: Render Matrix Relative Objects
+        glPushMatrix();
+        FloatBuffer buf = BufferUtils.createFloatBuffer(16 * 4);
+        glGetFloat(GL_MODELVIEW_MATRIX, buf);
+        buf.rewind();
+        buf.put(0, 1.0f);
+        buf.put(1, 0.0f);
+        buf.put(2, 0.0f);
+
+        buf.put(4, 0.0f);
+        buf.put(5, 1.0f);
+        buf.put(6, 0.0f);
+
+        buf.put(8, 0.0f);
+        buf.put(9, 0.0f);
+        buf.put(10, 1.0f);
+        
+        glLoadMatrix(buf);
+        
+        //PASS4: Render Matrix Mesh Objects
+        for(Model m : RENDER_LIST) {
+            try {
+                m.init();
+                m.render(RenderPass.MATRIX_MESH_RENDERING);
+            } catch(Throwable t) {
+                Game.GAME_INSTANCE.getLogger().log(t);
+            }
+        }
+        
+        //PASS5: Render Matrix Alpha Objects
+        for(Model m : RENDER_LIST) {
+            try {
+                m.init();
+                m.render(RenderPass.MATRIX_ALPHA_RENDERING);
+            } catch(Throwable t) {
+                Game.GAME_INSTANCE.getLogger().log(t);
+            }
+        }
+        glPopMatrix();
+        
+        //PASS6: Redner 2D Mesh Objects (Like GUI/HUD)
+        this.getCamera().reset();
+        for(Model m : RENDER_LIST) {
+            try {
+                m.init();
+                m.render(RenderPass.MATRIX_2D_MESH_RENDERING);
+            } catch(Throwable t) {
+                Game.GAME_INSTANCE.getLogger().log(t);
+            }
+        }
+        
+        //Update Display
         Display.update();
         
         this.lastFrame = System.currentTimeMillis();
@@ -387,7 +500,7 @@ public class DisplayManager {
         int id = GL_LIGHT0;
         List<Light> lights = this.getLightsList();
         
-        for(int i = GL_LIGHT0; i < GL_LIGHT0 + glGetInteger(GL_MAX_LIGHTS); i++) {
+        for(int i = GL_LIGHT0; i < GL_LIGHT0 + getMaxLights(); i++) {
             if(i-GL_LIGHT0 < lights.size()) {
                 enableLight(i);
             } else {
@@ -413,14 +526,19 @@ public class DisplayManager {
     }
 
     public double getFrameRate() {
-        return this.fps;
+        return this.nfps;
+    }
+
+    public String getFrameRateStr() {
+        return new DecimalFormat("0").format(this.getFrameRate());
     }
     
     private void updateFPS() {
-        long now = System.currentTimeMillis();
-        
-        double diff = (double)now - (double)this.lastFrame;//How long it's taking to render each frame
-        double fps = 1000d / diff; //FPS = 1 second / diff
-        this.fps = fps;
+        if(getNow() - lastFPS > 1000) {
+            nfps = fps;
+            fps = 0;
+            lastFPS += 1000;
+        }
+        fps++;
     }
 }

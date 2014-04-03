@@ -14,30 +14,12 @@
  * limitations under the License.
  */
 
-package com.domsplace.FaultEngine.Display.Camera;
-
-import com.domsplace.FaultEngine.Location.Location;
+package com.domsplace.FaultEngine.Font;
 
 /**
  *
  * @author Dominic Masters
  */
-public interface Camera {
-    public int getWidth();
-    public int getHeight();
-    public double getFOV();
-    public Location getLocation();
+public class Text {
     
-    public void setFOV(double zoom);
-    public void setLocation(Location location);
-    
-    public void lookAt(Location location);
-    
-    public void panForward(double amt);
-    public void panBackwards(double amt);
-    public void panLeft(double amt);
-    public void panRight(double amt);
-    
-    public void apply();
-    public void reset();
 }
